@@ -369,7 +369,7 @@ tr:hover td{background:#f8fafc}
         <input type="hidden" id="f-serial">
         <div class="fg fg1" style="margin-bottom:10px">
           <div class="field"><label>Tipo de mantenimiento *</label>
-            <select id="f-tipo">
+            <select id="f-tipo" onchange="onTipoMantChange()">
               <option value="">Seleccionar...</option>
               <option value="Preventivo">Preventivo</option>
               <option value="Correctivo">Correctivo</option>
@@ -404,6 +404,43 @@ tr:hover td{background:#f8fafc}
         <input type="hidden" id="f-tipo-eq"><input type="hidden" id="f-marca"><input type="hidden" id="f-capacidad"><input type="hidden" id="f-ubicacion">
         <div class="fg fg1">
           <div class="field"><label>Diagnóstico de la solicitud *</label><textarea id="f-descripcion" placeholder="Síntomas del equipo, tipo de falla, condición observada..."></textarea></div>
+        </div>
+
+        <!-- CHECKLIST DE EVALUACIÓN (solo visible cuando el tipo es Evaluación) -->
+        <div id="checklist-eval" style="display:none;margin-top:4px;border:1px solid #d9ccef;border-radius:9px;overflow:hidden">
+          <div style="background:linear-gradient(90deg,var(--purple-bg),transparent);padding:7px 12px;display:flex;align-items:center;gap:8px">
+            <i class="ti ti-clipboard-check" style="color:var(--purple)"></i>
+            <span style="font-size:11px;font-weight:700;color:var(--purple)">Checklist de evaluación — encendido / inspección</span>
+          </div>
+          <div style="padding:10px 12px">
+            <div class="fg fg3" style="margin-bottom:10px">
+              <div class="field"><label>¿Encendió? *</label>
+                <select id="ev-encendido"><option value="Sí">Sí</option><option value="No">No</option></select>
+              </div>
+              <div class="field"><label>Tiempo de encendido</label>
+                <input type="text" id="ev-tiempo" placeholder="Ej: 15 min">
+              </div>
+              <div class="field"><label>Fecha de encendido</label>
+                <input type="date" id="ev-fecha">
+              </div>
+            </div>
+            <div class="fg fg3" style="margin-bottom:10px">
+              <div class="field"><label>Nivel de aceite</label>
+                <select id="ev-aceite"><option value="Normal">Normal</option><option value="Bajo">Bajo</option></select>
+              </div>
+              <div class="field"><label>Nivel de refrigerante</label>
+                <select id="ev-refrigerante"><option value="Normal">Normal</option><option value="Bajo">Bajo</option></select>
+              </div>
+              <div class="field"><label>Nivel de combustible</label>
+                <select id="ev-combustible"><option value="Normal">Normal</option><option value="Bajo">Bajo</option></select>
+              </div>
+            </div>
+            <div class="fg fg1">
+              <div class="field"><label>Observaciones de la evaluación</label>
+                <textarea id="ev-obs" placeholder="Anotaciones del encendido, hallazgos, recomendaciones..." style="min-height:60px"></textarea>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
       <div class="arow">
@@ -944,6 +981,19 @@ function bdgTipo(t){const c=CT_TIPOS[t]||'#94a3b8';return`<span class="bdg" styl
 function goTab(t,btn){document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));document.getElementById('panel-'+t).classList.add('active');btn.classList.add('active');if(t==='historial')renderHist();if(t==='dashboard')renderDash();if(t==='hojas'){renderHojas();}if(t==='nuevo'){mostrarPaso(1);limpiar();}if(t==='config'){const s=localStorage.getItem('sige_fb_cfg');if(s&&document.getElementById('fb-config-input'))document.getElementById('fb-config-input').value=s;}}
 function actualizarStepper(paso){[1,2,3,4,5].forEach(n=>{const si=document.getElementById('si'+n),sn=document.getElementById('sn'+n);if(!si)return;si.classList.remove('active','done');sn.classList.remove('active','done');if(n<paso){si.classList.add('done');sn.classList.add('done');sn.innerHTML='<i class="ti ti-check" style="font-size:12px"></i>';}else if(n===paso){si.classList.add('active');sn.classList.add('active');sn.textContent=n===5?'⚖':n;}else{sn.textContent=n===5?'⚖':n;}});[1,2,3,4].forEach(n=>{const sc=document.getElementById('sc'+n);if(sc)sc.classList.toggle('done',n<paso);});}
 function mostrarPaso(n){['etapa1','etapa2b','etapa2','etapa3'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display='none';});if(n===2){document.getElementById('etapa2b').style.display='block';}else{const e=document.getElementById('etapa'+(n<=2?n:n-1));if(e&&n!==2){}const ids={1:'etapa1',2:'etapa2b',3:'etapa2',4:'etapa3'};const el=document.getElementById(ids[n]);if(el)el.style.display='block';}actualizarStepper(n);if(n===4)initFirma();window.scrollTo(0,0);}
+// Muestra el checklist de evaluación solo cuando el tipo de mantenimiento es Evaluación
+function onTipoMantChange(){
+  const tipo=document.getElementById('f-tipo').value;
+  const cl=document.getElementById('checklist-eval');
+  if(!cl)return;
+  if(tipo==='Evaluación'){
+    cl.style.display='block';
+    const fe=document.getElementById('ev-fecha'); if(fe && !fe.value) fe.value=hoy();
+    const d=document.getElementById('f-descripcion'); if(d && !d.value.trim()) d.value='Encendido e inspección de planta eléctrica';
+  }else{
+    cl.style.display='none';
+  }
+}
 function onCiudadChange(){
   const ciudad=document.getElementById('f-ciudad').value;
   const gI=document.getElementById('grupo-inmueble');
@@ -1050,7 +1100,7 @@ function fmtConsecutivo(r){
   return'—';
 }
 
-async function guardarSolicitud(){const ciudad=document.getElementById('f-ciudad').value,tipo=document.getElementById('f-tipo').value,serial=(document.getElementById('f-serial').value||'').trim().toUpperCase(),desc=document.getElementById('f-descripcion').value.trim();if(!ciudad||!tipo||!desc){showA('Complete todos los campos obligatorios (*)','e');return;}const despInfo=getDespacho();if(!despInfo){showA('Seleccione el inmueble','e');return;}if(!serial){showA('Seleccione la planta eléctrica','e');return;}const primero=equiposConocidos().filter(r=>(r.serial||'').toUpperCase()===serial)[0];const consec=getNextConsecutivo();const reg={id:gid(),consecutivo:consec.num,anioOrden:consec.anio,codigoOrden:consec.codigo,serial,ciudad,inmueble:despInfo.inmueble,despacho:despInfo.despacho,tipoMant:tipo,descripcion:desc,fechaSolicitud:document.getElementById('f-fecha').value,tipoEq:primero?primero.tipoEq:'',marca:primero?primero.marca:'',modelo:primero?(primero.modelo||''):'',capacidad:primero?primero.capacidad:'',ubicacion:primero?primero.ubicacion:'',estadoOrden:'Solicitud',estado:'Solicitado',creadoEn:fmtNow(),timeline:[{fecha:fmtNow(),evento:'Solicitud registrada',tipo:'i',detalle:`${tipo} · ${despInfo.despacho} · ${ciudad}`}],contratista:'',empresa:'',fechaEjecucion:'',fechaSalida:'',actividades:'',obsTecnico:'',obsAdmin:'',estadoFin:'',responsableRecibe:'',cargoResp:'',obsEntrega:'',satisfaccion:'',firma:null,decision:'',motivoInconformidad:''};await saveData(reg,true);showA(`✓ Solicitud guardada — ${serial} · ${despInfo.despacho}`,'s');limpiar();document.getElementById('last-update').textContent='Guardado: '+fmtNow();setTimeout(()=>{document.querySelectorAll('.nav-btn')[2].click();},1200);}
+async function guardarSolicitud(){const gv=id=>{const e=document.getElementById(id);return e?(''+e.value).trim():'';};const ciudad=document.getElementById('f-ciudad').value,tipo=document.getElementById('f-tipo').value,serial=(document.getElementById('f-serial').value||'').trim().toUpperCase(),desc=document.getElementById('f-descripcion').value.trim();if(!ciudad||!tipo||!desc){showA('Complete todos los campos obligatorios (*)','e');return;}const despInfo=getDespacho();if(!despInfo){showA('Seleccione el inmueble','e');return;}if(!serial){showA('Seleccione la planta eléctrica','e');return;}const primero=equiposConocidos().filter(r=>(r.serial||'').toUpperCase()===serial)[0];const consec=getNextConsecutivo();const reg={id:gid(),consecutivo:consec.num,anioOrden:consec.anio,codigoOrden:consec.codigo,serial,ciudad,inmueble:despInfo.inmueble,despacho:despInfo.despacho,tipoMant:tipo,descripcion:desc,evaluacion:(tipo==='Evaluación'?{encendido:gv('ev-encendido'),tiempo:gv('ev-tiempo'),fecha:gv('ev-fecha'),aceite:gv('ev-aceite'),refrigerante:gv('ev-refrigerante'),combustible:gv('ev-combustible'),obs:gv('ev-obs')}:null),fechaSolicitud:document.getElementById('f-fecha').value,tipoEq:primero?primero.tipoEq:'',marca:primero?primero.marca:'',modelo:primero?(primero.modelo||''):'',capacidad:primero?primero.capacidad:'',ubicacion:primero?primero.ubicacion:'',estadoOrden:'Solicitud',estado:'Solicitado',creadoEn:fmtNow(),timeline:[{fecha:fmtNow(),evento:'Solicitud registrada',tipo:'i',detalle:`${tipo} · ${despInfo.despacho} · ${ciudad}`}],contratista:'',empresa:'',fechaEjecucion:'',fechaSalida:'',actividades:'',obsTecnico:'',obsAdmin:'',estadoFin:'',responsableRecibe:'',cargoResp:'',obsEntrega:'',satisfaccion:'',firma:null,decision:'',motivoInconformidad:''};await saveData(reg,true);showA(`✓ Solicitud guardada — ${serial} · ${despInfo.despacho}`,'s');limpiar();document.getElementById('last-update').textContent='Guardado: '+fmtNow();setTimeout(()=>{document.querySelectorAll('.nav-btn')[2].click();},1200);}
 
 async function guardarEntregaTecnico(){
   const tec=(document.getElementById('g-tec-asignado').value||'').trim();
@@ -1139,7 +1189,7 @@ function initFirma(){const canvas=document.getElementById('firma-c');if(!canvas)
 function clrFirma(){const c=document.getElementById('firma-c');if(firmaCtx)firmaCtx.clearRect(0,0,c.width,c.height);firmaVacia=true;document.getElementById('firma-estado').textContent='';}
 function renderEncuesta(){document.getElementById('enc-opciones').innerHTML=[{val:'5',lbl:'Muy Satisfactorio',ico:'ti-mood-happy'},{val:'4',lbl:'Satisfactorio',ico:'ti-mood-smile'},{val:'3',lbl:'Normal',ico:'ti-mood-neutral'},{val:'2',lbl:'Poco Satisfactorio',ico:'ti-mood-confused'},{val:'1',lbl:'No Satisfactorio',ico:'ti-mood-sad'}].map(o=>`<label class="enc-opt" onmouseover="this.style.borderColor='${SCOLORS[o.val]}';this.style.background='${SBGS[o.val]}'" onmouseout="syncEncuesta()"><input type="radio" name="enc-sat" value="${o.val}" style="accent-color:${SCOLORS[o.val]};width:15px;height:15px;flex-shrink:0" onchange="syncEncuesta()"><i class="ti ${o.ico}" style="font-size:20px;color:${SCOLORS[o.val]};flex-shrink:0"></i><span style="font-size:12px;font-weight:600;color:${SCOLORS[o.val]}">${o.lbl}</span><span style="font-size:11px;color:var(--text2);flex:1;padding-left:4px">${o.val}/5</span></label>`).join('');}
 function syncEncuesta(){document.querySelectorAll('#enc-opciones label').forEach(lbl=>{const inp=lbl.querySelector('input');lbl.style.borderColor=inp.checked?SCOLORS[inp.value]:'var(--border)';lbl.style.background=inp.checked?SBGS[inp.value]:'#fff';});}
-function limpiar(){['f-ciudad','f-inmueble','f-planta','f-tipo','f-serial','f-tipo-eq','f-marca','f-capacidad','f-ubicacion','f-descripcion'].forEach(id=>{const el=document.getElementById(id);if(el){el.value='';if(el.tagName==='SELECT')el.selectedIndex=0;}});document.getElementById('f-despacho').value='';document.getElementById('f-fecha').value=hoy();document.getElementById('grupo-inmueble').style.display='none';document.getElementById('grupo-planta').style.display='none';document.getElementById('equipo-info-panel').style.display='none';mostrarPaso(1);}
+function limpiar(){['f-ciudad','f-inmueble','f-planta','f-tipo','f-serial','f-tipo-eq','f-marca','f-capacidad','f-ubicacion','f-descripcion','ev-tiempo','ev-fecha','ev-obs'].forEach(id=>{const el=document.getElementById(id);if(el){el.value='';if(el.tagName==='SELECT')el.selectedIndex=0;}});document.getElementById('f-despacho').value='';document.getElementById('f-fecha').value=hoy();document.getElementById('grupo-inmueble').style.display='none';document.getElementById('grupo-planta').style.display='none';document.getElementById('equipo-info-panel').style.display='none';const cl=document.getElementById('checklist-eval');if(cl)cl.style.display='none';mostrarPaso(1);}
 function miniTimeline(r){const e=r.estadoOrden||'Solicitud';const pasos=[{lbl:'Solicitud',done:true},{lbl:'Al técnico',done:['Entregado al Técnico','En Mantenimiento','Entregado conforme','No conforme'].includes(e)},{lbl:'Ejecución',done:['En Mantenimiento','Entregado conforme','No conforme'].includes(e)},{lbl:'Evaluación',done:['Entregado conforme','No conforme'].includes(e)}];let h='<div class="mtl">';pasos.forEach((p,i)=>{const curr=!p.done&&(i===0||(pasos[i-1]&&pasos[i-1].done));h+=`<div class="mtl-dot ${p.done?'done':curr?'curr':''}"><i class="ti ${p.done?'ti-check':curr?'ti-point':'ti-circle'}" style="font-size:9px"></i></div><span class="mtl-lbl">${p.lbl}</span>`;if(i<3)h+=`<div class="mtl-line ${p.done?'done':''}"></div>`;});return h+'</div>';}
 function btnSiguiente(r){const e=r.estadoOrden||'Solicitud';if(e==='Solicitud')return`<button class="btn btn-p btn-sm" onclick="continuarOrden('${r.id}',2)"><i class="ti ti-user-check"></i>Entregar al técnico</button>`;if(e==='Entregado al Técnico')return`<button class="btn btn-sm" style="background:#1e8449;color:#fff;border-color:#1e8449" onclick="continuarOrden('${r.id}',3)"><i class="ti ti-tool"></i>Registrar ejecución</button>`;if(e==='En Mantenimiento')return`<button class="btn btn-sm btn-w" onclick="continuarOrden('${r.id}',4)"><i class="ti ti-star"></i>Registrar evaluación</button>`;return'';}
 // ── CONTROL DE FILTROS HISTORIAL ──
@@ -1322,12 +1372,35 @@ function renderHojas(){
 }
 
 // Bitácora combinada (histórico de RELACION_PLANTAS + órdenes registradas en SIGE), orden cronológico descendente
+// Chips del checklist de evaluación (verde=normal/sí, rojo=bajo/no)
+function nivelChip(label,val){
+  if(!val)return '';
+  const bajo=/bajo/i.test(val);
+  const c=bajo?['#c0392b','#fce8e8']:['#155230','#e6f7ee'];
+  return `<span style="display:inline-flex;align-items:center;gap:3px;font-size:10.5px;background:${c[1]};color:${c[0]};padding:2px 8px;border-radius:8px;font-weight:600"><i class="ti ${bajo?'ti-arrow-down':'ti-check'}" style="font-size:10px"></i>${label}: ${val}</span>`;
+}
+function renderChecklistEval(ev){
+  if(!ev)return '';
+  const enc=ev.encendido||'';const noEnc=/^no/i.test(enc);
+  const encChip = enc?`<span style="display:inline-flex;align-items:center;gap:3px;font-size:10.5px;background:${noEnc?'#fce8e8':'#e6f7ee'};color:${noEnc?'#c0392b':'#155230'};padding:2px 8px;border-radius:8px;font-weight:600"><i class="ti ${noEnc?'ti-x':'ti-check'}" style="font-size:10px"></i>Encendió: ${enc}</span>`:'';
+  const chips=[encChip,
+    ev.tiempo?`<span style="font-size:10.5px;background:var(--bg2);color:var(--text2);padding:2px 8px;border-radius:8px;font-weight:600"><i class="ti ti-clock" style="font-size:10px"></i> ${ev.tiempo}</span>`:'',
+    ev.fecha?`<span style="font-size:10.5px;background:var(--bg2);color:var(--text2);padding:2px 8px;border-radius:8px;font-weight:600"><i class="ti ti-calendar" style="font-size:10px"></i> ${fmt(ev.fecha)}</span>`:'',
+    nivelChip('Aceite',ev.aceite),nivelChip('Refrigerante',ev.refrigerante),nivelChip('Combustible',ev.combustible)
+  ].filter(Boolean).join(' ');
+  if(!chips && !ev.obs)return '';
+  return `<div style="margin-top:5px;padding:7px 9px;background:var(--purple-bg);border-radius:7px">
+      <div style="font-size:9.5px;font-weight:700;color:var(--purple);text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px"><i class="ti ti-clipboard-check"></i> Checklist de evaluación</div>
+      <div style="display:flex;flex-wrap:wrap;gap:5px">${chips}</div>
+      ${ev.obs?`<div style="font-size:11px;color:var(--text2);margin-top:6px"><span style="font-weight:600">Observaciones: </span>${ev.obs}</div>`:''}
+    </div>`;
+}
 function bitacoraDe(serial){
   const s=(serial||'').toUpperCase();
   const hist=BITACORA_HIST.filter(b=>b.codigo.toUpperCase()===s)
     .map(b=>({fecha:b.fecha,tipo:b.tipo,diagnostico:b.diagnostico,procedimiento:b.procedimiento,observaciones:b.observaciones,estado:b.estado,fuente:'Histórico'}));
   const live=regs.filter(r=>(r.serial||'').toUpperCase()===s)
-    .map(r=>({fecha:r.fechaEjecucion||r.fechaSolicitud||r.creadoEn||'',tipo:r.tipoMant,diagnostico:r.descripcion||'',procedimiento:r.actividades||'',observaciones:[r.obsTecnico,r.obsEntrega].filter(Boolean).join(' — '),estado:r.estadoFin||'',fuente:'SIGE',id:r.id,cons:fmtConsecutivo(r)}));
+    .map(r=>({fecha:r.fechaEjecucion||r.fechaSolicitud||r.creadoEn||'',tipo:r.tipoMant,diagnostico:r.descripcion||'',procedimiento:r.actividades||'',observaciones:[r.obsTecnico,r.obsEntrega].filter(Boolean).join(' — '),estado:r.estadoFin||'',evaluacion:r.evaluacion||null,fuente:'SIGE',id:r.id,cons:fmtConsecutivo(r)}));
   return [...hist,...live].sort((a,b)=>((a.fecha||'')<(b.fecha||'')?1:-1));
 }
 // Estado operativo actual = el de la orden SIGE más reciente (si existe), o el estado consolidado del inventario
@@ -1413,6 +1486,7 @@ function verHojaVida(serial){
         ${b.diagnostico?`<div style="font-size:11.5px;margin-bottom:3px"><span style="color:var(--text2);font-weight:600">Diagnóstico: </span>${b.diagnostico}</div>`:''}
         ${b.procedimiento?`<div style="font-size:11.5px;margin-bottom:3px"><span style="color:var(--text2);font-weight:600">Procedimiento del servicio: </span>${b.procedimiento}</div>`:''}
         ${b.observaciones?`<div style="font-size:11.5px;color:var(--text2)"><span style="font-weight:600">Observaciones: </span>${b.observaciones}</div>`:''}
+        ${b.evaluacion?renderChecklistEval(b.evaluacion):''}
       </div>`;
     }).join('');
   }else{
@@ -2209,6 +2283,7 @@ window.goTab = goTab;
 window.actualizarStepper = actualizarStepper;
 window.mostrarPaso = mostrarPaso;
 window.onCiudadChange = onCiudadChange;
+window.onTipoMantChange = onTipoMantChange;
 window.onInmuebleChange = onInmuebleChange;
 window.onPlantaChange = onPlantaChange;
 window.poblarPlantas = poblarPlantas;
