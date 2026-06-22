@@ -320,13 +320,13 @@ tr:hover td{background:#f8fafc}
   <div id="panel-nuevo" class="panel">
     <div id="alert-box" class="alert"></div>
     <div class="steps-hdr">
-      <div class="step-item active" id="si1"><div class="step-num active" id="sn1">1</div><div><div class="step-lbl">Solicitud</div><div class="step-sub">Despacho</div></div></div>
+      <div class="step-item active" id="si1"><div class="step-num active" id="sn1">1</div><div><div class="step-lbl">Solicitud</div><div class="step-sub">Inmueble</div></div></div>
       <div class="step-conn" id="sc1"></div>
       <div class="step-item" id="si2"><div class="step-num" id="sn2">2</div><div><div class="step-lbl">Al Técnico</div><div class="step-sub">Asignación</div></div></div>
       <div class="step-conn" id="sc2"></div>
       <div class="step-item" id="si3"><div class="step-num" id="sn3">3</div><div><div class="step-lbl">Ejecución</div><div class="step-sub">Contratista</div></div></div>
       <div class="step-conn" id="sc3"></div>
-      <div class="step-item" id="si4"><div class="step-num" id="sn4">4</div><div><div class="step-lbl">Evaluación</div><div class="step-sub">Firma despacho</div></div></div>
+      <div class="step-item" id="si4"><div class="step-num" id="sn4">4</div><div><div class="step-lbl">Evaluación</div><div class="step-sub">Firma y entrega</div></div></div>
       <div class="step-conn" id="sc4"></div>
       <div class="step-item" id="si5"><div class="step-num" id="sn5">⚖</div><div><div class="step-lbl">Decisión</div><div class="step-sub">Conforme / No</div></div></div>
 
@@ -349,26 +349,25 @@ tr:hover td{background:#f8fafc}
           <div class="field"><label>Fecha de solicitud *</label><input type="date" id="f-fecha"></div>
         </div>
         <div id="grupo-inmueble" style="display:none;margin-bottom:10px">
-          <div class="fg fg2">
-            <div class="field"><label>Inmueble *</label>
-              <select id="f-inmueble" onchange="onInmuebleChange()">
-                <option value="">Seleccionar...</option>
-                <option value="Palacio de Justicia Calle 21">Palacio de Justicia Calle 21</option>
-                <option value="Palacio de Justicia SPA">Palacio de Justicia SPA</option>
-                <option value="Contraloría">Contraloría</option>
-                <option value="CESPA">CESPA</option>
-              </select>
-            </div>
-            <div class="field" id="grupo-despacho-arauca" style="display:none"><label>Oficina / Despacho *</label>
-              <select id="f-despacho-arauca"><option value="">Seleccionar despacho...</option></select>
-            </div>
+          <div class="field"><label>Inmueble *</label>
+            <select id="f-inmueble" onchange="onInmuebleChange()">
+              <option value="">Seleccionar...</option>
+              <option value="Palacio de Justicia Calle 21">Palacio de Justicia Calle 21</option>
+              <option value="Palacio de Justicia SPA">Palacio de Justicia SPA</option>
+              <option value="Contraloría">Contraloría</option>
+              <option value="CESPA">CESPA</option>
+            </select>
           </div>
         </div>
-        <div id="grupo-despacho-texto" style="display:none;margin-bottom:10px">
-          <div class="field"><label>Oficina / Despacho *</label><input type="text" id="f-despacho-texto" placeholder="Ej: Juzgado Promiscuo Municipal"></div>
+        <div id="grupo-planta" style="display:none;margin-bottom:10px">
+          <div class="field"><label>Planta eléctrica *</label>
+            <select id="f-planta" onchange="onPlantaChange()"><option value="">Seleccionar planta...</option></select>
+            <div style="font-size:10px;color:var(--text2);margin-top:4px"><i class="ti ti-info-circle"></i> La planta da respaldo a todo el inmueble. Al seleccionarla se cargan por defecto su tipo, marca y capacidad.</div>
+          </div>
         </div>
         <input type="hidden" id="f-despacho">
-        <div class="fg fg2" style="margin-bottom:10px">
+        <input type="hidden" id="f-serial">
+        <div class="fg fg1" style="margin-bottom:10px">
           <div class="field"><label>Tipo de mantenimiento *</label>
             <select id="f-tipo">
               <option value="">Seleccionar...</option>
@@ -378,20 +377,14 @@ tr:hover td{background:#f8fafc}
               <option value="Instalación">Instalación</option>
             </select>
           </div>
-          <div class="field"><label>Número de serie del equipo</label>
-            <div style="display:flex;gap:6px">
-              <input type="text" id="f-serial" placeholder="Ej: 30690315, PE-C21-YTO-45" style="flex:1" oninput="buscarEquipo()" autocomplete="off">
-              <button class="btn btn-sm" onclick="buscarEquipo()"><i class="ti ti-search"></i></button>
-            </div>
-          </div>
         </div>
         <!-- PANEL EQUIPO ENCONTRADO -->
-        <div id="equipo-info-panel" class="equipo-info" style="padding:0;overflow:hidden">
+        <div id="equipo-info-panel" class="equipo-info" style="padding:0;overflow:hidden;display:none">
           <!-- Cabecera equipo -->
           <div style="background:var(--c1);color:#fff;padding:8px 12px;display:flex;align-items:center;gap:8px">
             <i class="ti ti-engine" style="font-size:16px"></i>
-            <span style="font-size:11px;font-weight:700">Equipo registrado — datos preservados del registro original</span>
-            <button onclick="limpiarSeleccionEquipo()" style="margin-left:auto;background:rgba(255,255,255,.15);border:none;color:#fff;cursor:pointer;font-size:10px;padding:3px 8px;border-radius:4px">✕ Cambiar equipo</button>
+            <span style="font-size:11px;font-weight:700">Datos de la planta — cargados por defecto del inventario</span>
+            <button onclick="limpiarSeleccionEquipo()" style="margin-left:auto;background:rgba(255,255,255,.15);border:none;color:#fff;cursor:pointer;font-size:10px;padding:3px 8px;border-radius:4px">✕ Cambiar planta</button>
           </div>
           <!-- Datos del equipo -->
           <div style="padding:10px 12px">
@@ -400,35 +393,15 @@ tr:hover td{background:#f8fafc}
               <div><div class="ei-l">Marca</div><div class="ei-v" id="ei-marca">—</div></div>
               <div><div class="ei-l">Capacidad</div><div class="ei-v" id="ei-cap">—</div></div>
               <div><div class="ei-l">Ubicación</div><div class="ei-v" id="ei-ubic">—</div></div>
-              <div><div class="ei-l">Último despacho</div><div class="ei-v" id="ei-despacho" style="font-size:10px">—</div></div>
+              <div><div class="ei-l">Inmueble</div><div class="ei-v" id="ei-despacho" style="font-size:10px">—</div></div>
             </div>
             <!-- Historial del equipo -->
             <div id="ei-historial" style="margin-top:6px"></div>
           </div>
         </div>
 
-        <!-- SUGERENCIAS AUTOCOMPLETE SERIAL -->
-        <div id="serial-sugerencias" style="display:none;position:relative;z-index:50;margin-top:-6px;margin-bottom:8px;background:#fff;border:.5px solid var(--blue-b);border-radius:0 0 8px 8px;box-shadow:0 4px 12px rgba(0,0,0,.1);max-height:200px;overflow-y:auto"></div>
-
-        <!-- BUSCADOR INVERSO POR DESPACHO -->
-        <div id="busq-despacho-panel" style="background:var(--amber-bg);border:.5px solid var(--amber-b);border-radius:9px;padding:10px 12px;margin-bottom:10px;display:none">
-          <div style="font-size:10px;font-weight:700;color:var(--amber);margin-bottom:6px;display:flex;align-items:center;gap:5px">
-            <i class="ti ti-building"></i>Equipos registrados en este despacho
-          </div>
-          <div id="busq-despacho-resultado"></div>
-        </div>
-        <div class="fg fg3" style="margin-bottom:10px" id="grupo-equipo-nuevo">
-          <div class="field"><label>Tipo de equipo</label>
-            <select id="f-tipo-eq">
-              <option value="">Seleccionar...</option>
-              <option value="Planta Diésel Estacionaria">Planta Diésel Estacionaria</option><option value="Planta Diésel Portátil">Planta Diésel Portátil</option>
-              <option value="Grupo Electrógeno">Grupo Electrógeno</option><option value="Otro">Otro</option>
-            </select>
-          </div>
-          <div class="field"><label>Marca</label><input type="text" id="f-marca" placeholder="Cummins, CRAMACO, STAMFORD, YTO..."></div>
-          <div class="field"><label>Capacidad (kVA / kW)</label><input type="text" id="f-capacidad" placeholder="100 kVA, 80 kVA, 6 KW..."></div>
-          <div class="field"><label>Ubicación del equipo</label><input type="text" id="f-ubicacion" placeholder="Oficina 201, Piso 2..."></div>
-        </div>
+        <!-- Campos de equipo ocultos: se cargan por defecto desde el catálogo al elegir la planta -->
+        <input type="hidden" id="f-tipo-eq"><input type="hidden" id="f-marca"><input type="hidden" id="f-capacidad"><input type="hidden" id="f-ubicacion">
         <div class="fg fg1">
           <div class="field"><label>Diagnóstico de la solicitud *</label><textarea id="f-descripcion" placeholder="Síntomas del equipo, tipo de falla, condición observada..."></textarea></div>
         </div>
@@ -971,190 +944,94 @@ function bdgTipo(t){const c=CT_TIPOS[t]||'#94a3b8';return`<span class="bdg" styl
 function goTab(t,btn){document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));document.getElementById('panel-'+t).classList.add('active');btn.classList.add('active');if(t==='historial')renderHist();if(t==='dashboard')renderDash();if(t==='hojas'){renderHojas();}if(t==='nuevo'){mostrarPaso(1);limpiar();}if(t==='config'){const s=localStorage.getItem('sige_fb_cfg');if(s&&document.getElementById('fb-config-input'))document.getElementById('fb-config-input').value=s;}}
 function actualizarStepper(paso){[1,2,3,4,5].forEach(n=>{const si=document.getElementById('si'+n),sn=document.getElementById('sn'+n);if(!si)return;si.classList.remove('active','done');sn.classList.remove('active','done');if(n<paso){si.classList.add('done');sn.classList.add('done');sn.innerHTML='<i class="ti ti-check" style="font-size:12px"></i>';}else if(n===paso){si.classList.add('active');sn.classList.add('active');sn.textContent=n===5?'⚖':n;}else{sn.textContent=n===5?'⚖':n;}});[1,2,3,4].forEach(n=>{const sc=document.getElementById('sc'+n);if(sc)sc.classList.toggle('done',n<paso);});}
 function mostrarPaso(n){['etapa1','etapa2b','etapa2','etapa3'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display='none';});if(n===2){document.getElementById('etapa2b').style.display='block';}else{const e=document.getElementById('etapa'+(n<=2?n:n-1));if(e&&n!==2){}const ids={1:'etapa1',2:'etapa2b',3:'etapa2',4:'etapa3'};const el=document.getElementById(ids[n]);if(el)el.style.display='block';}actualizarStepper(n);if(n===4)initFirma();window.scrollTo(0,0);}
-function onCiudadChange(){const ciudad=document.getElementById('f-ciudad').value,gI=document.getElementById('grupo-inmueble'),gT=document.getElementById('grupo-despacho-texto'),gDA=document.getElementById('grupo-despacho-arauca');document.getElementById('f-inmueble').value='';document.getElementById('f-despacho-arauca').innerHTML='<option value="">Seleccionar despacho...</option>';document.getElementById('f-despacho').value='';const dt=document.getElementById('f-despacho-texto');if(dt)dt.value='';gDA.style.display='none';if(ciudad==='Arauca'){gI.style.display='block';gT.style.display='none';}else if(ciudad){gI.style.display='none';gT.style.display='block';}else{gI.style.display='none';gT.style.display='none';}}
-function onInmuebleChange(){const inm=document.getElementById('f-inmueble').value,sel=document.getElementById('f-despacho-arauca'),gDA=document.getElementById('grupo-despacho-arauca');sel.innerHTML='<option value="">Seleccionar despacho...</option>';document.getElementById('f-despacho').value='';if(inm&&INMUEBLES[inm]){INMUEBLES[inm].forEach(d=>{const o=document.createElement('option');o.value=d;o.textContent=d;sel.appendChild(o);});gDA.style.display='block';}else{gDA.style.display='none';}}
-function getDespacho(){const ciudad=document.getElementById('f-ciudad').value;if(ciudad==='Arauca'){const inm=document.getElementById('f-inmueble').value,dep=document.getElementById('f-despacho-arauca').value;if(!inm||!dep)return null;return{despacho:`${inm} — ${dep}`,inmueble:inm};}else{const dep=(document.getElementById('f-despacho-texto')||{}).value||'';if(!dep.trim())return null;return{despacho:dep.trim(),inmueble:''};}}
-function buscarEquipo(){
-  const rawSerial=(document.getElementById('f-serial').value||'').trim().toUpperCase();
-  const panel=document.getElementById('equipo-info-panel');
-  const grupoNuevo=document.getElementById('grupo-equipo-nuevo');
-  const sugBox=document.getElementById('serial-sugerencias');
-
-  if(!rawSerial){
-    panel.style.display='none';
-    grupoNuevo.style.display='grid';
-    sugBox.style.display='none';
-    return;
-  }
-
-  // Buscar coincidencias parciales para autocomplete (catálogo base + registros previos)
-  const fuente=equiposConocidos();
-  const coincidencias=[...new Map(
-    fuente.filter(r=>(r.serial||'').toUpperCase().includes(rawSerial)
-                  || (r.modelo||'').toUpperCase().includes(rawSerial)
-                  || (r.marca||'').toUpperCase().includes(rawSerial)
-                  || (r.ciudad||'').toUpperCase().includes(rawSerial)
-                  || (r.despacho||'').toUpperCase().includes(rawSerial))
-        .map(r=>[r.serial.toUpperCase(),r])
-  ).values()];
-
-  // Coincidencia exacta
-  const exacto = coincidencias.find(r=>(r.serial||'').toUpperCase()===rawSerial);
-
-  if(exacto){
-    // Ocultar sugerencias — match exacto
-    sugBox.style.display='none';
-    seleccionarEquipo(exacto);
-  } else if(coincidencias.length>0 && rawSerial.length>=2){
-    // Mostrar lista de sugerencias
-    sugBox.style.display='block';
-    sugBox.innerHTML=coincidencias.slice(0,8).map(r=>`
-      <div class="serial-sug-item" onclick="elegirSugerencia('${r.serial}')">
-        <div>
-          <div><span class="serial-sug-serial">${r.serial}</span>${r._catalogo?' <span style="font-size:9px;background:var(--green-bg);color:var(--green);padding:1px 6px;border-radius:8px;font-weight:600">catálogo</span>':''}</div>
-          <div class="serial-sug-info">${[r.tipoEq,r.marca,r.capacidad].filter(Boolean).join(' · ')||'Sin datos'}</div>
-          <div class="serial-sug-desp"><i class="ti ti-building" style="font-size:10px"></i> ${r.despacho||'—'} · ${r.ciudad||'—'}</div>
-        </div>
-      </div>`).join('');
-    panel.style.display='none';
-    grupoNuevo.style.display='grid';
-  } else {
-    // Serial no encontrado en registros
-    sugBox.style.display='none';
-    panel.style.display='none';
-    grupoNuevo.style.display='grid';
+function onCiudadChange(){
+  const ciudad=document.getElementById('f-ciudad').value;
+  const gI=document.getElementById('grupo-inmueble');
+  const gP=document.getElementById('grupo-planta');
+  document.getElementById('f-inmueble').value='';
+  document.getElementById('f-despacho').value='';
+  limpiarSeleccionEquipo();
+  if(ciudad==='Arauca'){
+    gI.style.display='block';      // primero elige inmueble
+    gP.style.display='none';
+  }else if(ciudad){
+    gI.style.display='none';       // municipio: la planta cubre el despacho judicial del municipio
+    poblarPlantas(ciudad,'');
+    gP.style.display='block';
+  }else{
+    gI.style.display='none';
+    gP.style.display='none';
   }
 }
-
-function elegirSugerencia(serial){
-  document.getElementById('f-serial').value=serial;
-  document.getElementById('serial-sugerencias').style.display='none';
-  const r=equiposConocidos().filter(x=>(x.serial||'').toUpperCase()===serial.toUpperCase())[0];
-  if(r) seleccionarEquipo(r);
-}
-
-function seleccionarEquipo(r){
-  const panel=document.getElementById('equipo-info-panel');
-  const grupoNuevo=document.getElementById('grupo-equipo-nuevo');
-
-  // Datos básicos
-  document.getElementById('ei-tipo').textContent=r.tipoEq||'—';
-  document.getElementById('ei-marca').textContent=r.marca||'—';
-  document.getElementById('ei-cap').textContent=r.capacidad||'—';
-  document.getElementById('ei-ubic').textContent=r.ubicacion||'—';
-  document.getElementById('ei-despacho').textContent=r.despacho||(r.ciudad||'—');
-
-  // Autocompletar ciudad y despacho en el formulario
-  const citySelect=document.getElementById('f-ciudad');
-  if(r.ciudad && citySelect){
-    citySelect.value=r.ciudad;
-    onCiudadChange();
-    // Rellenar inmueble y despacho según ciudad
-    if(r.ciudad==='Arauca'){
-      setTimeout(()=>{
-        const inmSel=document.getElementById('f-inmueble');
-        if(inmSel && r.inmueble){
-          inmSel.value=r.inmueble;
-          onInmuebleChange();
-          setTimeout(()=>{
-            const dspSel=document.getElementById('f-despacho-arauca');
-            // Extraer el despacho sin el prefijo del inmueble
-            const dspVal=r.despacho.includes('—')?r.despacho.split('—').slice(1).join('—').trim():r.despacho;
-            if(dspSel){
-              // Buscar opción que coincida
-              const opts=[...dspSel.options];
-              const found=opts.find(o=>o.value.trim()===dspVal.trim());
-              if(found) dspSel.value=found.value;
-              else{
-                // Agregar como opción si no existe
-                const opt=document.createElement('option');
-                opt.value=dspVal;opt.textContent=dspVal;
-                dspSel.appendChild(opt);dspSel.value=dspVal;
-              }
-              syncDespachoFromSel();
-            }
-          },80);
-        }
-      },50);
-    } else {
-      // Otros municipios: rellenar campo texto
-      setTimeout(()=>{
-        const dtxt=document.getElementById('f-despacho-texto');
-        if(dtxt && r.despacho) dtxt.value=r.despacho;
-        document.getElementById('f-despacho').value=r.despacho||'';
-      },50);
-    }
-  }
-
-  // Historial del equipo
-  const historiales=regs.filter(x=>(x.serial||'').toUpperCase()===(r.serial||'').toUpperCase())
-                        .sort((a,b)=>b.creadoEn>a.creadoEn?1:-1);
-  const histEl=document.getElementById('ei-historial');
-  if(historiales.length){
-    histEl.innerHTML=`
-      <div style="font-size:10px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.7px;margin-bottom:5px">
-        <i class="ti ti-history"></i> Historial (${historiales.length} orden${historiales.length>1?'es':''})
-      </div>
-      <div style="max-height:130px;overflow-y:auto">
-        ${historiales.map(h=>`
-          <div class="ei-hist-row">
-            <span style="font-family:monospace;font-size:10px;font-weight:700;color:var(--c1);flex-shrink:0">${fmtConsecutivo(h)}</span>
-            <span>${bdgTipo(h.tipoMant)}</span>
-            <span style="flex:1;color:var(--text2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${h.despacho||'—'}</span>
-            <span style="color:var(--text3);font-size:10px;flex-shrink:0">${h.fechaSolicitud?fmt(h.fechaSolicitud):'—'}</span>
-            ${bdgOrden(h.estadoOrden||'Solicitud')}
-          </div>`).join('')}
-      </div>`;
-  } else {
-    histEl.innerHTML='';
-  }
-
-  panel.style.display='block';
-  grupoNuevo.style.display='none';
-
-  // Mostrar equipos del mismo despacho (buscador inverso)
-  mostrarEquiposDespacho(r.despacho,r.serial);
-}
-
-function mostrarEquiposDespacho(despacho, serialActual){
-  if(!despacho) return;
-  const panel=document.getElementById('busq-despacho-panel');
-  const resultado=document.getElementById('busq-despacho-resultado');
-  // Equipos únicos del mismo despacho (excluyendo el actual)
-  const otrosSeriales=[...new Map(
-    regs.filter(r=>r.despacho===despacho && (r.serial||'').toUpperCase()!==(serialActual||'').toUpperCase() && r.serial)
-        .map(r=>[r.serial.toUpperCase(),r])
-  ).values()];
-
-  if(!otrosSeriales.length){panel.style.display='none';return;}
-  panel.style.display='block';
-  resultado.innerHTML=`
-    <div style="font-size:11px;color:var(--amber);margin-bottom:6px">
-      Otros equipos registrados en <strong>${despacho.split('—').pop().trim()}</strong>:
-    </div>
-    ${otrosSeriales.map(r=>`
-      <div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:.5px solid var(--amber-b);font-size:11px">
-        <span class="serial-tag" style="cursor:pointer" onclick="elegirSugerencia('${r.serial}')" title="Clic para seleccionar">${r.serial}</span>
-        <span style="color:var(--amber)">${[r.tipoEq,r.marca,r.capacidad].filter(Boolean).join(' · ')||'—'}</span>
-        <span style="margin-left:auto;color:var(--text3);font-size:10px">${bdgOrden(r.estadoOrden||'Solicitud')}</span>
-        <button class="btn btn-sm" style="padding:2px 7px;font-size:10px" onclick="elegirSugerencia('${r.serial}')"><i class="ti ti-arrow-up-right"></i></button>
-      </div>`).join('')}`;
-}
-
-function limpiarSeleccionEquipo(){
-  document.getElementById('equipo-info-panel').style.display='none';
-  document.getElementById('grupo-equipo-nuevo').style.display='grid';
-  document.getElementById('serial-sugerencias').style.display='none';
-  document.getElementById('busq-despacho-panel').style.display='none';
-  document.getElementById('f-serial').value='';
-  document.getElementById('f-serial').focus();
-}
-
-function syncDespachoFromSel(){
+function onInmuebleChange(){
   const inm=document.getElementById('f-inmueble').value;
-  const dep=document.getElementById('f-despacho-arauca').value;
-  if(inm&&dep) document.getElementById('f-despacho').value=`${inm} — ${dep}`;
+  const gP=document.getElementById('grupo-planta');
+  limpiarSeleccionEquipo();
+  if(inm){ poblarPlantas('Arauca',inm); gP.style.display='block'; }
+  else{ gP.style.display='none'; }
 }
+// Llena el selector de plantas con las que están en la ubicación elegida
+function poblarPlantas(ciudad,inmueble){
+  const sel=document.getElementById('f-planta');
+  if(!sel)return;
+  sel.innerHTML='<option value="">Seleccionar planta...</option>';
+  const lista=CATALOGO.filter(e=>e.ciudad===ciudad && (inmueble? e.inmueble===inmueble : true));
+  lista.forEach(e=>{
+    const o=document.createElement('option');
+    o.value=e.serial;
+    o.textContent=`${e.serial} — ${e.descripcion}${e.marca&&e.marca!=='N/I'?' ('+e.marca+(e.capacidad&&e.capacidad!=='N/I'?' · '+e.capacidad:'')+')':''}`;
+    sel.appendChild(o);
+  });
+  if(!lista.length){const o=document.createElement('option');o.value='';o.disabled=true;o.textContent='(Sin plantas registradas en esta ubicación)';sel.appendChild(o);}
+}
+// Al elegir la planta: carga por defecto tipo, marca, capacidad y ubicación desde el catálogo
+function onPlantaChange(){
+  const serial=document.getElementById('f-planta').value;
+  const panel=document.getElementById('equipo-info-panel');
+  if(!serial){ document.getElementById('f-serial').value=''; if(panel)panel.style.display='none'; return; }
+  const e=CATALOGO.find(x=>x.serial===serial);
+  if(!e)return;
+  document.getElementById('f-serial').value=e.serial;
+  const cap=(e.capacidad&&e.capacidad!=='N/I')?e.capacidad:'No registrada';
+  document.getElementById('ei-tipo').textContent=e.tipoEq||'—';
+  document.getElementById('ei-marca').textContent=e.marca||'—';
+  document.getElementById('ei-cap').textContent=cap;
+  document.getElementById('ei-ubic').textContent=e.ubicacion||'—';
+  document.getElementById('ei-despacho').textContent=e.despacho||e.inmueble||e.ciudad||'—';
+  // Historial de intervenciones de la planta
+  const hist=regs.filter(x=>(x.serial||'').toUpperCase()===serial.toUpperCase()).sort((a,b)=>b.creadoEn>a.creadoEn?1:-1);
+  const histEl=document.getElementById('ei-historial');
+  histEl.innerHTML = hist.length? `
+    <div style="font-size:10px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.7px;margin-bottom:5px"><i class="ti ti-history"></i> Historial (${hist.length} orden${hist.length>1?'es':''})</div>
+    <div style="max-height:130px;overflow-y:auto">${hist.map(h=>`
+      <div class="ei-hist-row">
+        <span style="font-family:monospace;font-size:10px;font-weight:700;color:var(--c1);flex-shrink:0">${fmtConsecutivo(h)}</span>
+        <span>${bdgTipo(h.tipoMant)}</span>
+        <span style="flex:1;color:var(--text2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${h.despacho||'—'}</span>
+        <span style="color:var(--text3);font-size:10px;flex-shrink:0">${h.fechaSolicitud?fmt(h.fechaSolicitud):'—'}</span>
+        ${bdgOrden(h.estadoOrden||'Solicitud')}
+      </div>`).join('')}</div>` : '';
+  panel.style.display='block';
+}
+function getDespacho(){
+  const ciudad=document.getElementById('f-ciudad').value;
+  if(!ciudad)return null;
+  if(ciudad==='Arauca'){
+    const inm=document.getElementById('f-inmueble').value;
+    if(!inm)return null;
+    return {inmueble:inm, despacho:inm};          // la planta cubre todo el inmueble
+  }else{
+    const inm='Despacho Judicial de '+ciudad;
+    return {inmueble:inm, despacho:inm};
+  }
+}
+// (Flujo por número de serie retirado: ahora la planta se elige desde el selector y autocompleta los datos)
+function limpiarSeleccionEquipo(){
+  const sel=document.getElementById('f-planta'); if(sel) sel.value='';
+  const panel=document.getElementById('equipo-info-panel'); if(panel) panel.style.display='none';
+  const s=document.getElementById('f-serial'); if(s) s.value='';
+}
+
 // ── CONSECUTIVO ──
 const CONSEC_KEY='sige_consecutivo_v1';
 function getNextConsecutivo(){
@@ -1173,7 +1050,7 @@ function fmtConsecutivo(r){
   return'—';
 }
 
-async function guardarSolicitud(){const ciudad=document.getElementById('f-ciudad').value,tipo=document.getElementById('f-tipo').value,serial=(document.getElementById('f-serial').value||'').trim().toUpperCase(),desc=document.getElementById('f-descripcion').value.trim();if(!ciudad||!tipo||!desc){showA('Complete todos los campos obligatorios (*)','e');return;}const despInfo=getDespacho();if(!despInfo){showA('Seleccione el inmueble y el despacho','e');return;}const primero=equiposConocidos().filter(r=>(r.serial||'').toUpperCase()===serial)[0];const consec=getNextConsecutivo();const reg={id:gid(),consecutivo:consec.num,anioOrden:consec.anio,codigoOrden:consec.codigo,serial,ciudad,inmueble:despInfo.inmueble,despacho:despInfo.despacho,tipoMant:tipo,descripcion:desc,fechaSolicitud:document.getElementById('f-fecha').value,tipoEq:primero?primero.tipoEq:document.getElementById('f-tipo-eq').value,marca:primero?primero.marca:document.getElementById('f-marca').value,modelo:primero?(primero.modelo||''):'',capacidad:primero?primero.capacidad:document.getElementById('f-capacidad').value,ubicacion:primero?primero.ubicacion:document.getElementById('f-ubicacion').value,estadoOrden:'Solicitud',estado:'Solicitado',creadoEn:fmtNow(),timeline:[{fecha:fmtNow(),evento:'Solicitud registrada',tipo:'i',detalle:`${tipo} · ${despInfo.despacho} · ${ciudad}`}],contratista:'',empresa:'',fechaEjecucion:'',fechaSalida:'',actividades:'',obsTecnico:'',obsAdmin:'',estadoFin:'',responsableRecibe:'',cargoResp:'',obsEntrega:'',satisfaccion:'',firma:null,decision:'',motivoInconformidad:''};await saveData(reg,true);showA(`✓ Solicitud guardada — ${serial} · ${despInfo.despacho}`,'s');limpiar();document.getElementById('last-update').textContent='Guardado: '+fmtNow();setTimeout(()=>{document.querySelectorAll('.nav-btn')[2].click();},1200);}
+async function guardarSolicitud(){const ciudad=document.getElementById('f-ciudad').value,tipo=document.getElementById('f-tipo').value,serial=(document.getElementById('f-serial').value||'').trim().toUpperCase(),desc=document.getElementById('f-descripcion').value.trim();if(!ciudad||!tipo||!desc){showA('Complete todos los campos obligatorios (*)','e');return;}const despInfo=getDespacho();if(!despInfo){showA('Seleccione el inmueble','e');return;}if(!serial){showA('Seleccione la planta eléctrica','e');return;}const primero=equiposConocidos().filter(r=>(r.serial||'').toUpperCase()===serial)[0];const consec=getNextConsecutivo();const reg={id:gid(),consecutivo:consec.num,anioOrden:consec.anio,codigoOrden:consec.codigo,serial,ciudad,inmueble:despInfo.inmueble,despacho:despInfo.despacho,tipoMant:tipo,descripcion:desc,fechaSolicitud:document.getElementById('f-fecha').value,tipoEq:primero?primero.tipoEq:'',marca:primero?primero.marca:'',modelo:primero?(primero.modelo||''):'',capacidad:primero?primero.capacidad:'',ubicacion:primero?primero.ubicacion:'',estadoOrden:'Solicitud',estado:'Solicitado',creadoEn:fmtNow(),timeline:[{fecha:fmtNow(),evento:'Solicitud registrada',tipo:'i',detalle:`${tipo} · ${despInfo.despacho} · ${ciudad}`}],contratista:'',empresa:'',fechaEjecucion:'',fechaSalida:'',actividades:'',obsTecnico:'',obsAdmin:'',estadoFin:'',responsableRecibe:'',cargoResp:'',obsEntrega:'',satisfaccion:'',firma:null,decision:'',motivoInconformidad:''};await saveData(reg,true);showA(`✓ Solicitud guardada — ${serial} · ${despInfo.despacho}`,'s');limpiar();document.getElementById('last-update').textContent='Guardado: '+fmtNow();setTimeout(()=>{document.querySelectorAll('.nav-btn')[2].click();},1200);}
 
 async function guardarEntregaTecnico(){
   const tec=(document.getElementById('g-tec-asignado').value||'').trim();
@@ -1262,7 +1139,7 @@ function initFirma(){const canvas=document.getElementById('firma-c');if(!canvas)
 function clrFirma(){const c=document.getElementById('firma-c');if(firmaCtx)firmaCtx.clearRect(0,0,c.width,c.height);firmaVacia=true;document.getElementById('firma-estado').textContent='';}
 function renderEncuesta(){document.getElementById('enc-opciones').innerHTML=[{val:'5',lbl:'Muy Satisfactorio',ico:'ti-mood-happy'},{val:'4',lbl:'Satisfactorio',ico:'ti-mood-smile'},{val:'3',lbl:'Normal',ico:'ti-mood-neutral'},{val:'2',lbl:'Poco Satisfactorio',ico:'ti-mood-confused'},{val:'1',lbl:'No Satisfactorio',ico:'ti-mood-sad'}].map(o=>`<label class="enc-opt" onmouseover="this.style.borderColor='${SCOLORS[o.val]}';this.style.background='${SBGS[o.val]}'" onmouseout="syncEncuesta()"><input type="radio" name="enc-sat" value="${o.val}" style="accent-color:${SCOLORS[o.val]};width:15px;height:15px;flex-shrink:0" onchange="syncEncuesta()"><i class="ti ${o.ico}" style="font-size:20px;color:${SCOLORS[o.val]};flex-shrink:0"></i><span style="font-size:12px;font-weight:600;color:${SCOLORS[o.val]}">${o.lbl}</span><span style="font-size:11px;color:var(--text2);flex:1;padding-left:4px">${o.val}/5</span></label>`).join('');}
 function syncEncuesta(){document.querySelectorAll('#enc-opciones label').forEach(lbl=>{const inp=lbl.querySelector('input');lbl.style.borderColor=inp.checked?SCOLORS[inp.value]:'var(--border)';lbl.style.background=inp.checked?SBGS[inp.value]:'#fff';});}
-function limpiar(){['f-ciudad','f-inmueble','f-tipo','f-serial','f-tipo-eq','f-marca','f-capacidad','f-ubicacion','f-descripcion'].forEach(id=>{const el=document.getElementById(id);if(el){el.value='';if(el.tagName==='SELECT')el.selectedIndex=0;}});const dt=document.getElementById('f-despacho-texto');if(dt)dt.value='';document.getElementById('f-despacho').value='';document.getElementById('f-fecha').value=hoy();document.getElementById('grupo-inmueble').style.display='none';document.getElementById('grupo-despacho-arauca').style.display='none';document.getElementById('grupo-despacho-texto').style.display='none';document.getElementById('equipo-info-panel').style.display='none';document.getElementById('grupo-equipo-nuevo').style.display='grid';document.getElementById('f-despacho-arauca').innerHTML='<option value="">Seleccionar despacho...</option>';mostrarPaso(1);}
+function limpiar(){['f-ciudad','f-inmueble','f-planta','f-tipo','f-serial','f-tipo-eq','f-marca','f-capacidad','f-ubicacion','f-descripcion'].forEach(id=>{const el=document.getElementById(id);if(el){el.value='';if(el.tagName==='SELECT')el.selectedIndex=0;}});document.getElementById('f-despacho').value='';document.getElementById('f-fecha').value=hoy();document.getElementById('grupo-inmueble').style.display='none';document.getElementById('grupo-planta').style.display='none';document.getElementById('equipo-info-panel').style.display='none';mostrarPaso(1);}
 function miniTimeline(r){const e=r.estadoOrden||'Solicitud';const pasos=[{lbl:'Solicitud',done:true},{lbl:'Al técnico',done:['Entregado al Técnico','En Mantenimiento','Entregado conforme','No conforme'].includes(e)},{lbl:'Ejecución',done:['En Mantenimiento','Entregado conforme','No conforme'].includes(e)},{lbl:'Evaluación',done:['Entregado conforme','No conforme'].includes(e)}];let h='<div class="mtl">';pasos.forEach((p,i)=>{const curr=!p.done&&(i===0||(pasos[i-1]&&pasos[i-1].done));h+=`<div class="mtl-dot ${p.done?'done':curr?'curr':''}"><i class="ti ${p.done?'ti-check':curr?'ti-point':'ti-circle'}" style="font-size:9px"></i></div><span class="mtl-lbl">${p.lbl}</span>`;if(i<3)h+=`<div class="mtl-line ${p.done?'done':''}"></div>`;});return h+'</div>';}
 function btnSiguiente(r){const e=r.estadoOrden||'Solicitud';if(e==='Solicitud')return`<button class="btn btn-p btn-sm" onclick="continuarOrden('${r.id}',2)"><i class="ti ti-user-check"></i>Entregar al técnico</button>`;if(e==='Entregado al Técnico')return`<button class="btn btn-sm" style="background:#1e8449;color:#fff;border-color:#1e8449" onclick="continuarOrden('${r.id}',3)"><i class="ti ti-tool"></i>Registrar ejecución</button>`;if(e==='En Mantenimiento')return`<button class="btn btn-sm btn-w" onclick="continuarOrden('${r.id}',4)"><i class="ti ti-star"></i>Registrar evaluación</button>`;return'';}
 // ── CONTROL DE FILTROS HISTORIAL ──
@@ -2333,22 +2210,25 @@ window.actualizarStepper = actualizarStepper;
 window.mostrarPaso = mostrarPaso;
 window.onCiudadChange = onCiudadChange;
 window.onInmuebleChange = onInmuebleChange;
-window.buscarEquipo = buscarEquipo;
-window.elegirSugerencia = elegirSugerencia;
-window.seleccionarEquipo = seleccionarEquipo;
+window.onPlantaChange = onPlantaChange;
+window.poblarPlantas = poblarPlantas;
 window.limpiarSeleccionEquipo = limpiarSeleccionEquipo;
-window.mostrarEquiposDespacho = mostrarEquiposDespacho;
 window.usarEquipoEnNuevaOrden = function(serial){
-  // Ir a nueva orden y preseleccionar el equipo
   document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
   document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.nav-btn')[1].classList.add('active');
   document.getElementById('panel-nuevo').classList.add('active');
   limpiar();
-  // Establecer el serial y buscar
+  const e=CATALOGO.find(x=>x.serial.toUpperCase()===serial.toUpperCase());
+  if(!e)return;
   setTimeout(()=>{
-    document.getElementById('f-serial').value=serial;
-    buscarEquipo();
+    document.getElementById('f-ciudad').value=e.ciudad; onCiudadChange();
+    if(e.ciudad==='Arauca'){
+      setTimeout(()=>{ document.getElementById('f-inmueble').value=e.inmueble; onInmuebleChange();
+        setTimeout(()=>{ document.getElementById('f-planta').value=e.serial; onPlantaChange(); },60); },60);
+    }else{
+      setTimeout(()=>{ document.getElementById('f-planta').value=e.serial; onPlantaChange(); },60);
+    }
   },100);
 };
 window.guardarSolicitud = guardarSolicitud;
