@@ -559,6 +559,10 @@ tr:hover td{background:#f8fafc}
     <!-- PASO 3 — EVALUACIÓN + DECISIÓN UNIFICADAS -->
     <div id="etapa3" style="display:none">
       <div class="alert aw show" id="e3-resumen"><i class="ti ti-info-circle"></i> Cargando...</div>
+      <div id="tecnico-firma-banner" style="display:none;background:linear-gradient(90deg,#e8f0fa,#f0f4ff);border:.5px solid #b8d0f0;border-radius:9px;padding:10px 14px;margin-bottom:10px;font-size:12px;color:var(--c1);align-items:center;gap:10px">
+        <i class="ti ti-user-check" style="font-size:18px;color:#2563a8;flex-shrink:0"></i>
+        <div><strong>Paso de firma y decisión de conformidad</strong><br><span style="color:var(--text2)">Solicite al funcionario que complete la calificación del servicio, luego recoja su firma y seleccione la decisión correspondiente.</span></div>
+      </div>
       <div class="card">
         <div class="slbl" style="background:linear-gradient(90deg,var(--amber-bg),transparent);padding:6px 10px;border-radius:6px;margin:-4px -4px 12px"><i class="ti ti-star" style="color:#d4871a"></i>Paso 4 — Evaluación, Firma y Decisión de Conformidad</div>
 
@@ -1001,7 +1005,7 @@ const USUARIOS=[
 ];
 const PERMISOS={
   admin:  {tabs:['dashboard','nuevo','historial','hojas','config'], crear:true, asignar:true, ejecutar:true, evaluar:true, editar:true, eliminar:true},
-  tecnico:{tabs:['historial','hojas'],                              crear:false,asignar:false,ejecutar:true, evaluar:false,editar:false,eliminar:false},
+  tecnico:{tabs:['nuevo','historial','hojas'],                       crear:false,asignar:false,ejecutar:true, evaluar:true, editar:false,eliminar:false},
   final:  {tabs:['dashboard','hojas'],                              crear:false,asignar:false,ejecutar:false,evaluar:false,editar:false,eliminar:false, soloLectura:true}
 };
 let SESION=null;
@@ -1041,7 +1045,10 @@ function aplicarPermisos(){
   const rolLbl={admin:'Administrador',tecnico:'Técnico',final:'Consulta'};
   document.getElementById('user-rol').textContent=rolLbl[SESION.rol]||SESION.rol;
   document.querySelectorAll('.nav-btn[data-tab]').forEach(b=>{
-    b.style.display = p.tabs.includes(b.getAttribute('data-tab'))?'':'none';
+    const tab=b.getAttribute('data-tab');
+    // tecnico: tiene acceso al panel 'nuevo' para la firma, pero no como pestaña navegable
+    const navVisible = p.tabs.includes(tab) && !(rolActivo()==='tecnico' && tab==='nuevo');
+    b.style.display = navVisible ? '' : 'none';
   });
   const primera=p.tabs[0];
   const btn=document.querySelector(`.nav-btn[data-tab="${primera}"]`);
@@ -1055,7 +1062,7 @@ function goTab(t,btn){
   if(SESION){const pr=PERMISOS[rolActivo()]; if(pr&&!pr.tabs.includes(t))return;}
   document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));document.getElementById('panel-'+t).classList.add('active');if(btn)btn.classList.add('active');if(t==='historial')renderHist();if(t==='dashboard')renderDash();if(t==='hojas'){renderHojas();}if(t==='nuevo'){mostrarPaso(1);limpiar();}if(t==='config'){const s=localStorage.getItem('sige_fb_cfg');if(s&&document.getElementById('fb-config-input'))document.getElementById('fb-config-input').value=s;}}
 function actualizarStepper(paso){[1,2,3,4,5].forEach(n=>{const si=document.getElementById('si'+n),sn=document.getElementById('sn'+n);if(!si)return;si.classList.remove('active','done');sn.classList.remove('active','done');if(n<paso){si.classList.add('done');sn.classList.add('done');sn.innerHTML='<i class="ti ti-check" style="font-size:12px"></i>';}else if(n===paso){si.classList.add('active');sn.classList.add('active');sn.textContent=n===5?'⚖':n;}else{sn.textContent=n===5?'⚖':n;}});[1,2,3,4].forEach(n=>{const sc=document.getElementById('sc'+n);if(sc)sc.classList.toggle('done',n<paso);});}
-function mostrarPaso(n){['etapa1','etapa2b','etapa2','etapa3'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display='none';});if(n===2){document.getElementById('etapa2b').style.display='block';}else{const e=document.getElementById('etapa'+(n<=2?n:n-1));if(e&&n!==2){}const ids={1:'etapa1',2:'etapa2b',3:'etapa2',4:'etapa3'};const el=document.getElementById(ids[n]);if(el)el.style.display='block';}actualizarStepper(n);if(n===4)initFirma();window.scrollTo(0,0);}
+function mostrarPaso(n){['etapa1','etapa2b','etapa2','etapa3'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display='none';});if(n===2){document.getElementById('etapa2b').style.display='block';}else{const e=document.getElementById('etapa'+(n<=2?n:n-1));if(e&&n!==2){}const ids={1:'etapa1',2:'etapa2b',3:'etapa2',4:'etapa3'};const el=document.getElementById(ids[n]);if(el)el.style.display='block';}actualizarStepper(n);if(n===4){initFirma();const b=document.getElementById('tecnico-firma-banner');if(b)b.style.display=rolActivo()==='tecnico'?'flex':'none';}window.scrollTo(0,0);}
 // Muestra el checklist de evaluación solo cuando el tipo de mantenimiento es Evaluación
 function onTipoMantChange(){
   const tipo=document.getElementById('f-tipo').value;
