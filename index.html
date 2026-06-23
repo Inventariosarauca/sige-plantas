@@ -175,6 +175,25 @@ tr:hover td{background:#f8fafc}
 </style>
 </head>
 <body>
+<!-- ═══════ PANTALLA DE INICIO DE SESIÓN ═══════ -->
+<div id="login-overlay" style="display:none;position:fixed;inset:0;z-index:9000;background:linear-gradient(135deg,#1a3a5c,#2563a8);align-items:center;justify-content:center;padding:20px">
+  <div style="background:#fff;border-radius:16px;box-shadow:0 20px 60px rgba(0,0,0,.3);width:100%;max-width:400px;overflow:hidden">
+    <div style="background:linear-gradient(135deg,#1a3a5c,#2563a8);padding:24px;text-align:center;color:#fff">
+      <div style="width:54px;height:54px;background:rgba(255,255,255,.15);border-radius:12px;display:inline-flex;align-items:center;justify-content:center;margin-bottom:10px"><i class="ti ti-engine" style="font-size:28px"></i></div>
+      <h2 style="font-size:17px;margin:0;font-weight:700">SIGE — Plantas Eléctricas</h2>
+      <p style="font-size:11px;opacity:.8;margin:4px 0 0">Rama Judicial Arauca · Control de acceso</p>
+    </div>
+    <div style="padding:22px">
+      <div class="field" style="margin-bottom:12px"><label>Usuario</label><input type="text" id="login-user" placeholder="admin / tecnico" autocomplete="username" onkeydown="if(event.key==='Enter')iniciarSesion()"></div>
+      <div class="field" style="margin-bottom:6px"><label>Contraseña</label><input type="password" id="login-pass" placeholder="••••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter')iniciarSesion()"></div>
+      <div id="login-error" style="display:none;font-size:11px;color:#c0392b;margin-bottom:8px"><i class="ti ti-alert-circle"></i> <span id="login-error-txt"></span></div>
+      <button class="btn btn-p" style="width:100%;justify-content:center;margin-top:8px;padding:10px" onclick="iniciarSesion()"><i class="ti ti-login"></i>Ingresar</button>
+      <div style="display:flex;align-items:center;gap:8px;margin:16px 0;color:var(--text2)"><div style="flex:1;height:1px;background:var(--border)"></div><span style="font-size:10px">o</span><div style="flex:1;height:1px;background:var(--border)"></div></div>
+      <button class="btn" style="width:100%;justify-content:center;padding:9px" onclick="entrarComoFinal()"><i class="ti ti-eye"></i>Entrar como usuario final (consulta)</button>
+      <p style="font-size:10px;color:var(--text2);text-align:center;margin:12px 0 0;line-height:1.5">El usuario final consulta el estado de las plantas sin contraseña.</p>
+    </div>
+  </div>
+</div>
 <!-- ═══════ VISTA PÚBLICA DE ENCUESTA (solo con ?encuesta=) ═══════ -->
 <div id="vista-encuesta" style="display:none;min-height:100vh;background:linear-gradient(135deg,#1a3a5c,#2563a8);padding:20px 14px">
   <div style="max-width:560px;margin:0 auto">
@@ -261,25 +280,32 @@ tr:hover td{background:#f8fafc}
   </div>
 </div>
 
-<div class="app">
+<div class="app" id="app-main" style="display:none">
   <div class="header">
     <div class="hicon"><i class="ti ti-engine"></i></div>
     <div style="flex:1">
       <h1>SIGE — Gestión de Mantenimiento de Plantas Eléctricas</h1>
       <p>Dirección Seccional Administrativa — Rama Judicial Arauca</p>
     </div>
-    <div style="font-size:10px;opacity:.65;text-align:right;line-height:1.5" id="last-update"></div>
+    <div style="display:flex;align-items:center;gap:12px">
+      <div id="user-chip" style="display:none;text-align:right;line-height:1.3">
+        <div style="font-size:12px;font-weight:700" id="user-nombre"></div>
+        <div style="font-size:10px;opacity:.75" id="user-rol"></div>
+      </div>
+      <button id="btn-logout" class="btn btn-sm" style="display:none;background:rgba(255,255,255,.15);color:#fff;border-color:rgba(255,255,255,.3)" onclick="cerrarSesion()"><i class="ti ti-logout"></i>Salir</button>
+      <div style="font-size:10px;opacity:.65;text-align:right;line-height:1.5" id="last-update"></div>
+    </div>
   </div>
   <div id="storage-status" class="storage-info">
     <i class="ti ti-database" style="font-size:16px;flex-shrink:0"></i>
     <span id="storage-status-txt"><strong>Verificando almacenamiento...</strong></span>
   </div>
   <nav class="nav">
-    <button class="nav-btn active" onclick="goTab('dashboard',this)"><i class="ti ti-layout-dashboard"></i><span class="nav-txt">Dashboard</span></button>
-    <button class="nav-btn" onclick="goTab('nuevo',this)"><i class="ti ti-plus"></i><span class="nav-txt">Nueva orden</span></button>
-    <button class="nav-btn" onclick="goTab('historial',this)"><i class="ti ti-list"></i><span class="nav-txt">Historial</span></button>
-    <button class="nav-btn" onclick="goTab('hojas',this)"><i class="ti ti-id-badge-2"></i><span class="nav-txt">Hojas de vida</span></button>
-    <button class="nav-btn" onclick="goTab('config',this)"><i class="ti ti-database"></i><span class="nav-txt">Firebase</span></button>
+    <button class="nav-btn active" data-tab="dashboard" onclick="goTab('dashboard',this)"><i class="ti ti-layout-dashboard"></i><span class="nav-txt">Dashboard</span></button>
+    <button class="nav-btn" data-tab="nuevo" onclick="goTab('nuevo',this)"><i class="ti ti-plus"></i><span class="nav-txt">Nueva orden</span></button>
+    <button class="nav-btn" data-tab="historial" onclick="goTab('historial',this)"><i class="ti ti-list"></i><span class="nav-txt">Historial</span></button>
+    <button class="nav-btn" data-tab="hojas" onclick="goTab('hojas',this)"><i class="ti ti-id-badge-2"></i><span class="nav-txt">Hojas de vida</span></button>
+    <button class="nav-btn" data-tab="config" onclick="goTab('config',this)"><i class="ti ti-database"></i><span class="nav-txt">Firebase</span></button>
   </nav>
 
   <!-- DASHBOARD -->
@@ -965,7 +991,69 @@ function showToast(msg,t){const b=document.getElementById('toast-box');b.classNa
 function showA(msg,t){const el=document.getElementById('alert-box');el.className='alert show a'+(t||'s');el.innerHTML='<i class="ti ti-'+(t==='e'?'alert-circle':'circle-check')+'"></i> '+msg;setTimeout(()=>el.classList.remove('show'),3500);}
 function bdgOrden(e){const m={'Solicitud':'b-sol','Entregado al Técnico':'b-eval','En Mantenimiento':'b-mant','Pendiente Evaluación':'b-eval','Evaluación realizada':'b-conf','Entregado conforme':'b-conf','No conforme':'b-nconf'};const ico={'Solicitud':'ti-file-plus','Entregado al Técnico':'ti-user-check','En Mantenimiento':'ti-tool','Pendiente Evaluación':'ti-clock','Evaluación realizada':'ti-clipboard-check','Entregado conforme':'ti-circle-check','No conforme':'ti-circle-x'};return`<span class="bdg ${m[e]||'b-def'}"><i class="ti ${ico[e]||'ti-circle'}" style="font-size:9px"></i>${e||'—'}</span>`;}
 function bdgTipo(t){const c=CT_TIPOS[t]||'#94a3b8';return`<span class="bdg" style="background:${c}22;color:${c}">${t||'—'}</span>`;}
-function goTab(t,btn){document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));document.getElementById('panel-'+t).classList.add('active');btn.classList.add('active');if(t==='historial')renderHist();if(t==='dashboard')renderDash();if(t==='hojas'){renderHojas();}if(t==='nuevo'){mostrarPaso(1);limpiar();}if(t==='config'){const s=localStorage.getItem('sige_fb_cfg');if(s&&document.getElementById('fb-config-input'))document.getElementById('fb-config-input').value=s;}}
+// ══════════ CONTROL DE ACCESO (roles y sesión) ══════════
+// NOTA: Las credenciales viven en el código del navegador, por lo que esta capa NO es
+// criptográficamente segura (cualquiera con acceso al archivo puede verlas). Sirve como
+// control de acceso operativo. Para seguridad real use Firebase Authentication + reglas.
+const USUARIOS=[
+  {usuario:'admin',   clave:'arauca2026', rol:'admin',   nombre:'Administrador'},
+  {usuario:'tecnico', clave:'tecnico2026',rol:'tecnico', nombre:'Técnico de mantenimiento'}
+];
+const PERMISOS={
+  admin:  {tabs:['dashboard','nuevo','historial','hojas','config'], crear:true, asignar:true, ejecutar:true, evaluar:true, editar:true, eliminar:true},
+  tecnico:{tabs:['historial','hojas'],                              crear:false,asignar:false,ejecutar:true, evaluar:false,editar:false,eliminar:false},
+  final:  {tabs:['dashboard','hojas'],                              crear:false,asignar:false,ejecutar:false,evaluar:false,editar:false,eliminar:false, soloLectura:true}
+};
+let SESION=null;
+function rolActivo(){return SESION?SESION.rol:null;}
+function puede(accion){const p=PERMISOS[rolActivo()];return !!(p&&p[accion]);}
+function iniciarSesion(){
+  const u=(document.getElementById('login-user').value||'').trim().toLowerCase();
+  const c=document.getElementById('login-pass').value||'';
+  const err=document.getElementById('login-error');
+  const found=USUARIOS.find(x=>x.usuario===u && x.clave===c);
+  if(!found){ err.style.display='block'; document.getElementById('login-error-txt').textContent='Usuario o contraseña incorrectos.'; return; }
+  abrirSesion({rol:found.rol,nombre:found.nombre});
+}
+function entrarComoFinal(){ abrirSesion({rol:'final',nombre:'Usuario final (consulta)'}); }
+function abrirSesion(s){
+  SESION=s;
+  try{sessionStorage.setItem('sige_sesion',JSON.stringify(s));}catch(e){}
+  document.getElementById('login-overlay').style.display='none';
+  document.getElementById('app-main').style.display='';
+  document.getElementById('login-pass').value='';
+  document.getElementById('login-error').style.display='none';
+  aplicarPermisos();
+}
+function cerrarSesion(){
+  SESION=null;
+  try{sessionStorage.removeItem('sige_sesion');}catch(e){}
+  document.getElementById('app-main').style.display='none';
+  document.getElementById('login-overlay').style.display='flex';
+  document.getElementById('login-user').value='';
+  document.getElementById('login-pass').value='';
+}
+function aplicarPermisos(){
+  const p=PERMISOS[rolActivo()]; if(!p)return;
+  document.getElementById('user-chip').style.display='block';
+  document.getElementById('btn-logout').style.display='';
+  document.getElementById('user-nombre').textContent=SESION.nombre;
+  const rolLbl={admin:'Administrador',tecnico:'Técnico',final:'Consulta'};
+  document.getElementById('user-rol').textContent=rolLbl[SESION.rol]||SESION.rol;
+  document.querySelectorAll('.nav-btn[data-tab]').forEach(b=>{
+    b.style.display = p.tabs.includes(b.getAttribute('data-tab'))?'':'none';
+  });
+  const primera=p.tabs[0];
+  const btn=document.querySelector(`.nav-btn[data-tab="${primera}"]`);
+  if(btn) goTab(primera,btn);
+}
+function restaurarSesion(){
+  try{const s=JSON.parse(sessionStorage.getItem('sige_sesion'));if(s&&s.rol){abrirSesion(s);return true;}}catch(e){}
+  return false;
+}
+function goTab(t,btn){
+  if(SESION){const pr=PERMISOS[rolActivo()]; if(pr&&!pr.tabs.includes(t))return;}
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));document.getElementById('panel-'+t).classList.add('active');if(btn)btn.classList.add('active');if(t==='historial')renderHist();if(t==='dashboard')renderDash();if(t==='hojas'){renderHojas();}if(t==='nuevo'){mostrarPaso(1);limpiar();}if(t==='config'){const s=localStorage.getItem('sige_fb_cfg');if(s&&document.getElementById('fb-config-input'))document.getElementById('fb-config-input').value=s;}}
 function actualizarStepper(paso){[1,2,3,4,5].forEach(n=>{const si=document.getElementById('si'+n),sn=document.getElementById('sn'+n);if(!si)return;si.classList.remove('active','done');sn.classList.remove('active','done');if(n<paso){si.classList.add('done');sn.classList.add('done');sn.innerHTML='<i class="ti ti-check" style="font-size:12px"></i>';}else if(n===paso){si.classList.add('active');sn.classList.add('active');sn.textContent=n===5?'⚖':n;}else{sn.textContent=n===5?'⚖':n;}});[1,2,3,4].forEach(n=>{const sc=document.getElementById('sc'+n);if(sc)sc.classList.toggle('done',n<paso);});}
 function mostrarPaso(n){['etapa1','etapa2b','etapa2','etapa3'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display='none';});if(n===2){document.getElementById('etapa2b').style.display='block';}else{const e=document.getElementById('etapa'+(n<=2?n:n-1));if(e&&n!==2){}const ids={1:'etapa1',2:'etapa2b',3:'etapa2',4:'etapa3'};const el=document.getElementById(ids[n]);if(el)el.style.display='block';}actualizarStepper(n);if(n===4)initFirma();window.scrollTo(0,0);}
 // Muestra el checklist de evaluación solo cuando el tipo de mantenimiento es Evaluación
@@ -1180,7 +1268,7 @@ function renderEncuesta(){document.getElementById('enc-opciones').innerHTML=[{va
 function syncEncuesta(){document.querySelectorAll('#enc-opciones label').forEach(lbl=>{const inp=lbl.querySelector('input');lbl.style.borderColor=inp.checked?SCOLORS[inp.value]:'var(--border)';lbl.style.background=inp.checked?SBGS[inp.value]:'#fff';});}
 function limpiar(){['f-ciudad','f-inmueble','f-planta','f-tipo','f-funcionando','f-serial','f-tipo-eq','f-marca','f-capacidad','f-ubicacion','f-descripcion','ev-tiempo','ev-fecha','ev-obs'].forEach(id=>{const el=document.getElementById(id);if(el){el.value='';if(el.tagName==='SELECT')el.selectedIndex=0;}});document.getElementById('f-despacho').value='';document.getElementById('f-fecha').value=hoy();document.getElementById('grupo-inmueble').style.display='none';document.getElementById('grupo-planta').style.display='none';document.getElementById('equipo-info-panel').style.display='none';const cl=document.getElementById('checklist-eval');if(cl)cl.style.display='none';mostrarPaso(1);}
 function miniTimeline(r){const e=r.estadoOrden||'Solicitud';const fin=['Entregado conforme','No conforme'].includes(e);const pasos=r.tipoMant==='Evaluación'?[{lbl:'Solicitud',done:true},{lbl:'Evaluación realizada',done:(e==='Evaluación realizada'||fin)}]:[{lbl:'Solicitud',done:true},{lbl:'Al técnico',done:['Entregado al Técnico','En Mantenimiento','Entregado conforme','No conforme'].includes(e)},{lbl:'Ejecución',done:['En Mantenimiento','Entregado conforme','No conforme'].includes(e)},{lbl:'Evaluación',done:fin}];const last=pasos.length-1;let h='<div class="mtl">';pasos.forEach((p,i)=>{const curr=!p.done&&(i===0||(pasos[i-1]&&pasos[i-1].done));h+=`<div class="mtl-dot ${p.done?'done':curr?'curr':''}"><i class="ti ${p.done?'ti-check':curr?'ti-point':'ti-circle'}" style="font-size:9px"></i></div><span class="mtl-lbl">${p.lbl}</span>`;if(i<last)h+=`<div class="mtl-line ${p.done?'done':''}"></div>`;});return h+'</div>';}
-function btnSiguiente(r){const e=r.estadoOrden||'Solicitud';if(['Entregado conforme','No conforme'].includes(e))return'';if(r.tipoMant==='Evaluación')return'';if(e==='Solicitud')return`<button class="btn btn-p btn-sm" onclick="continuarOrden('${r.id}',2)"><i class="ti ti-user-check"></i>Entregar al técnico</button>`;if(e==='Entregado al Técnico')return`<button class="btn btn-sm" style="background:#1e8449;color:#fff;border-color:#1e8449" onclick="continuarOrden('${r.id}',3)"><i class="ti ti-tool"></i>Registrar ejecución</button>`;if(e==='En Mantenimiento')return`<button class="btn btn-sm btn-w" onclick="continuarOrden('${r.id}',4)"><i class="ti ti-star"></i>Registrar evaluación</button>`;return'';}
+function btnSiguiente(r){const e=r.estadoOrden||'Solicitud';if(['Entregado conforme','No conforme'].includes(e))return'';if(r.tipoMant==='Evaluación')return'';if(e==='Solicitud')return puede('asignar')?`<button class="btn btn-p btn-sm" onclick="continuarOrden('${r.id}',2)"><i class="ti ti-user-check"></i>Entregar al técnico</button>`:'';if(e==='Entregado al Técnico')return puede('ejecutar')?`<button class="btn btn-sm" style="background:#1e8449;color:#fff;border-color:#1e8449" onclick="continuarOrden('${r.id}',3)"><i class="ti ti-tool"></i>Registrar ejecución</button>`:'';if(e==='En Mantenimiento')return puede('evaluar')?`<button class="btn btn-sm btn-w" onclick="continuarOrden('${r.id}',4)"><i class="ti ti-star"></i>Registrar evaluación</button>`:'';return'';}
 // ── CONTROL DE FILTROS HISTORIAL ──
 function onFiltroMunicipioChange(){
   const mun = document.getElementById('fil-municipio').value;
@@ -1259,6 +1347,8 @@ function renderHist(){
     const mD = !filDes || despachoSimple === filDes;
     return mQ && mE && mM && mI && mT && mD;
   });
+  // El técnico solo ve órdenes asignadas (de "Entregado al Técnico" en adelante)
+  if(rolActivo()==='tecnico'){ data=data.filter(r=>['Entregado al Técnico','En Mantenimiento','Entregado conforme','No conforme'].includes(r.estadoOrden)); }
 
   // ── Contador de resultados ──
   const c = document.getElementById('tabla-hist');
@@ -1309,8 +1399,8 @@ function renderHist(){
         <div class="oc-actions">
           ${sig}
           <button class="btn btn-sm" onclick="abrirMod('${r.id}')"><i class="ti ti-eye"></i>Ver</button>
-          <button class="btn btn-sm" onclick="abrirEditar('${r.id}')" style="background:var(--blue-bg);color:var(--c2);border-color:var(--blue-b)"><i class="ti ti-edit"></i></button>
-          <button class="btn btn-sm" onclick="eliminarReg('${r.id}')" style="background:var(--red-bg);color:var(--red);border-color:var(--red-b)"><i class="ti ti-trash"></i></button>
+          ${puede('editar')?`<button class="btn btn-sm" onclick="abrirEditar('${r.id}')" style="background:var(--blue-bg);color:var(--c2);border-color:var(--blue-b)"><i class="ti ti-edit"></i></button>`:''}
+          ${puede('eliminar')?`<button class="btn btn-sm" onclick="eliminarReg('${r.id}')" style="background:var(--red-bg);color:var(--red);border-color:var(--red-b)"><i class="ti ti-trash"></i></button>`:''}
           <button class="btn btn-sm" onclick="imprimirResumenId('${r.id}')"><i class="ti ti-printer"></i></button>
         </div>
       </div>
@@ -1435,7 +1525,7 @@ function verHojaVida(serial){
         <span style="font-size:11px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.5px">Estado operativo</span>
         ${bdgEstadoPlanta(estadoActual)}
         <span style="font-size:11px;color:var(--text2)">${ult?'· Última intervención: '+fmt(ult.fecha):'· Sin intervenciones registradas'}</span>
-        <button class="btn btn-sm btn-p" style="margin-left:auto" onclick="usarEquipoEnNuevaOrden('${eq.serial}')"><i class="ti ti-plus"></i>Registrar mantenimiento</button>
+        ${puede('crear')?`<button class="btn btn-sm btn-p" style="margin-left:auto" onclick="usarEquipoEnNuevaOrden('${eq.serial}')"><i class="ti ti-plus"></i>Registrar mantenimiento</button>`:''}
       </div>
 
       <div class="ecard-section-lbl"><i class="ti ti-clipboard-list"></i> Datos generales</div>
@@ -2167,6 +2257,11 @@ async function enviarEncuestaPublica(){
   document.getElementById('f-fecha').value=hoy();
   renderEncuesta();
 
+  // ── Control de acceso: restaurar sesión o mostrar login ──
+  if(!restaurarSesion()){
+    document.getElementById('login-overlay').style.display='flex';
+  }
+
   // ── Conexión automática a Firebase ──
   // Prioridad: 1) FB_CONFIG embebida en el archivo
   //            2) Config guardada en localStorage (sesiones anteriores)
@@ -2276,6 +2371,9 @@ document.addEventListener('click',function(e){
 });
 // ── Exponer funciones al window (requerido por type="module") ──
 window.goTab = goTab;
+window.iniciarSesion = iniciarSesion;
+window.entrarComoFinal = entrarComoFinal;
+window.cerrarSesion = cerrarSesion;
 window.actualizarStepper = actualizarStepper;
 window.mostrarPaso = mostrarPaso;
 window.onCiudadChange = onCiudadChange;
