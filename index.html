@@ -468,12 +468,18 @@ tr:hover td{background:#f8fafc}
               </div>
             </div>
             <div class="fg fg3" style="margin-bottom:10px">
+              <div class="field"><label>Horas del motor (horómetro)</label>
+                <input type="number" id="ev-horas" placeholder="Ej: 1250" min="0" style="width:100%">
+                <div style="font-size:10px;color:var(--text2);margin-top:3px"><i class="ti ti-info-circle"></i> Lectura actual del horómetro en horas</div>
+              </div>
               <div class="field"><label>Nivel de aceite</label>
                 <select id="ev-aceite"><option value="Normal">Normal</option><option value="Bajo">Bajo</option></select>
               </div>
               <div class="field"><label>Nivel de refrigerante</label>
                 <select id="ev-refrigerante"><option value="Normal">Normal</option><option value="Bajo">Bajo</option></select>
               </div>
+            </div>
+            <div class="fg fg2" style="margin-bottom:10px">
               <div class="field"><label>Nivel de combustible</label>
                 <select id="ev-combustible"><option value="Normal">Normal</option><option value="Bajo">Bajo</option></select>
               </div>
@@ -799,6 +805,61 @@ tr:hover td{background:#f8fafc}
   </div>
 </div>
 
+<!-- MODAL EDITAR PLANTA -->
+<div class="mo" id="modal-planta">
+  <div class="mbox" style="max-width:580px">
+    <div class="mhdr"><h3 id="mp-title"><i class="ti ti-engine"></i> Editar datos de la planta</h3><button class="cbtn" onclick="cerrarEditarPlanta()"><i class="ti ti-x"></i></button></div>
+    <div style="padding:16px 18px">
+      <div class="alert ai show" style="margin-bottom:12px"><i class="ti ti-info-circle"></i> Los cambios actualizan el catálogo base del sistema y se reflejan en todas las hojas de vida y órdenes de esa planta.</div>
+      <input type="hidden" id="mp-serial">
+      <div class="fg fg2">
+        <div class="field"><label>Código / Serial</label><input type="text" id="mp-serial-vis" disabled style="background:var(--bg2);color:var(--text2)"></div>
+        <div class="field"><label>Descripción</label><input type="text" id="mp-descripcion" placeholder="Ej: Planta Roja - Normal"></div>
+      </div>
+      <div class="fg fg2">
+        <div class="field"><label>Tipo de equipo</label>
+          <select id="mp-tipo">
+            <option value="Planta Diésel Estacionaria">Planta Diésel Estacionaria</option>
+            <option value="Planta No Encabinada">Planta No Encabinada</option>
+            <option value="Planta Diésel Portátil">Planta Diésel Portátil</option>
+            <option value="Grupo Electrógeno">Grupo Electrógeno</option>
+            <option value="Planta Diésel">Planta Diésel</option>
+            <option value="Otro">Otro</option>
+          </select>
+        </div>
+        <div class="field"><label>Marca</label><input type="text" id="mp-marca" placeholder="CUMMINS, KAMA, ALTERMAN..."></div>
+      </div>
+      <div class="fg fg3">
+        <div class="field"><label>Modelo</label><input type="text" id="mp-modelo" placeholder="Ej: G2R200SD/4"></div>
+        <div class="field"><label>Capacidad (kVA / kW)</label><input type="text" id="mp-capacidad" placeholder="Ej: 75 kVA"></div>
+        <div class="field"><label>Ubicación</label><input type="text" id="mp-ubicacion" placeholder="Cuarto de planta..."></div>
+      </div>
+      <div class="fg fg2">
+        <div class="field"><label>Municipio</label>
+          <select id="mp-ciudad">
+            <option value="Arauca">Arauca</option><option value="Saravena">Saravena</option>
+            <option value="Tame">Tame</option><option value="Fortul">Fortul</option>
+            <option value="Puerto Rondón">Puerto Rondón</option><option value="Cravo Norte">Cravo Norte</option>
+            <option value="Cubará">Cubará</option><option value="Arauquita">Arauquita</option>
+          </select>
+        </div>
+        <div class="field"><label>Inmueble / Despacho</label><input type="text" id="mp-despacho" placeholder="Palacio de Justicia..."></div>
+      </div>
+      <div class="fg fg2">
+        <div class="field"><label>N° de serie / Placa</label><input type="text" id="mp-nserie" placeholder="N° de placa o serie del fabricante"></div>
+        <div class="field"><label>Año de fabricación</label><input type="text" id="mp-anio" placeholder="Ej: 2019"></div>
+      </div>
+      <div class="fg fg1">
+        <div class="field"><label>Observaciones / Notas técnicas</label><textarea id="mp-notas" style="min-height:55px" placeholder="Características especiales, historial de intervenciones mayores..."></textarea></div>
+      </div>
+      <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:14px">
+        <button class="btn" onclick="cerrarEditarPlanta()">Cancelar</button>
+        <button class="btn btn-p" onclick="guardarEditarPlanta()"><i class="ti ti-device-floppy"></i>Guardar cambios</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script type="module">
 // ══ FIREBASE SDK ══
 import{initializeApp}from'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
@@ -858,11 +919,16 @@ function normEstado(e){e=(e||'').trim().toLowerCase();if(e.startsWith('opera'))r
 const EST_PLANTA_COLOR={'Operando':['#155230','#e6f7ee','#9ae6c0'],'Revisión':['#8a5a00','#fff3e0','#ffd699'],'Dañado':['#c0392b','#fce8e8','#f5b7b1'],'':['#555','#eee','#ccc']};
 function bdgEstadoPlanta(e){e=normEstado(e);const c=EST_PLANTA_COLOR[e]||EST_PLANTA_COLOR[''];const ico=e==='Operando'?'ti-circle-check':e==='Revisión'?'ti-alert-triangle':e==='Dañado'?'ti-alert-octagon':'ti-help';return `<span class="bdg" style="color:${c[0]};background:${c[1]};border:.5px solid ${c[2]}"><i class="ti ${ico}" style="font-size:10px"></i> ${e||'Sin dato'}</span>`;}
 // Devuelve equipos conocidos (registros previos + catálogo base), sin duplicar por serial
+// ══ CATÁLOGO DE EDICIONES DE PLANTAS (sobreescribe CATALOGO base, persiste en localStorage) ══
+const CAT_EDITS_KEY='sige_cat_v1';
+function cargarCatEdits(){try{return JSON.parse(localStorage.getItem(CAT_EDITS_KEY)||'{}');}catch(e){return {};}}
+function guardarCatEdits(edits){try{localStorage.setItem(CAT_EDITS_KEY,JSON.stringify(edits));}catch(e){}}
 function equiposConocidos(){
+  const edits=cargarCatEdits();
   const map=new Map();
-  CATALOGO.forEach(e=>map.set((e.serial||'').toUpperCase(),{...e,_catalogo:true}));
+  CATALOGO.forEach(e=>map.set((e.serial||'').toUpperCase(),{...e,...(edits[(e.serial||'').toUpperCase()]||{}),_catalogo:true}));
   regs.filter(r=>r.serial).sort((a,b)=>a.creadoEn>b.creadoEn?1:-1)
-      .forEach(r=>map.set((r.serial||'').toUpperCase(),r));
+      .forEach(r=>map.set((r.serial||'').toUpperCase(),{...map.get((r.serial||'').toUpperCase())||{},...r}));
   return [...map.values()];
 }
 let regs=[],raReg=null,ordenActiva=null,decisionSeleccionada=null,firmaCtx=null,firmaVacia=true,chTipo=null,chEst=null,chSat=null,chFunc=null;
@@ -1181,7 +1247,7 @@ function fmtConsecutivo(r){
   return'—';
 }
 
-async function guardarSolicitud(){const gv=id=>{const e=document.getElementById(id);return e?(''+e.value).trim():'';};const ciudad=document.getElementById('f-ciudad').value,tipo=document.getElementById('f-tipo').value,serial=(document.getElementById('f-serial').value||'').trim().toUpperCase(),desc=document.getElementById('f-descripcion').value.trim();const funcionando=gv('f-funcionando');if(!ciudad||!tipo||!desc){showA('Complete todos los campos obligatorios (*)','e');return;}if(!funcionando){showA('Indique si la planta está funcionando (Sí/No)','e');return;}const despInfo=getDespacho();if(!despInfo){showA('Seleccione el inmueble','e');return;}if(!serial){showA('Seleccione la planta eléctrica','e');return;}const primero=equiposConocidos().filter(r=>(r.serial||'').toUpperCase()===serial)[0];const consec=getNextConsecutivo();const reg={id:gid(),consecutivo:consec.num,anioOrden:consec.anio,codigoOrden:consec.codigo,serial,ciudad,inmueble:despInfo.inmueble,despacho:despInfo.despacho,tipoMant:tipo,descripcion:desc,funcionando,evaluacion:(tipo==='Evaluación'?{encendido:gv('ev-encendido'),tiempo:gv('ev-tiempo'),fecha:gv('ev-fecha'),aceite:gv('ev-aceite'),refrigerante:gv('ev-refrigerante'),combustible:gv('ev-combustible'),obs:gv('ev-obs')}:null),fechaSolicitud:document.getElementById('f-fecha').value,tipoEq:primero?primero.tipoEq:'',marca:primero?primero.marca:'',modelo:primero?(primero.modelo||''):'',capacidad:primero?primero.capacidad:'',ubicacion:primero?primero.ubicacion:'',estadoOrden:(tipo==='Evaluación'?'Evaluación realizada':'Solicitud'),estado:(tipo==='Evaluación'?'Evaluación realizada':'Solicitado'),creadoEn:fmtNow(),timeline:[{fecha:fmtNow(),evento:(tipo==='Evaluación'?'Evaluación registrada — proceso finalizado':'Solicitud registrada'),tipo:(tipo==='Evaluación'?'e':'i'),detalle:`${tipo} · ${despInfo.despacho} · ${ciudad}`}],contratista:'',empresa:'',fechaEjecucion:'',fechaSalida:'',actividades:'',obsTecnico:'',obsAdmin:'',estadoFin:'',responsableRecibe:'',cargoResp:'',obsEntrega:'',satisfaccion:'',firma:null,decision:'',motivoInconformidad:''};await saveData(reg,true);document.getElementById('last-update').textContent='Guardado: '+fmtNow();showA(tipo==='Evaluación'?`✓ Evaluación registrada y finalizada — ${serial}`:`✓ Solicitud guardada — ${serial} · ${despInfo.despacho}`,'s');limpiar();setTimeout(()=>{document.querySelectorAll('.nav-btn')[2].click();},1200);}
+async function guardarSolicitud(){const gv=id=>{const e=document.getElementById(id);return e?(''+e.value).trim():'';};const ciudad=document.getElementById('f-ciudad').value,tipo=document.getElementById('f-tipo').value,serial=(document.getElementById('f-serial').value||'').trim().toUpperCase(),desc=document.getElementById('f-descripcion').value.trim();const funcionando=gv('f-funcionando');if(!ciudad||!tipo||!desc){showA('Complete todos los campos obligatorios (*)','e');return;}if(!funcionando){showA('Indique si la planta está funcionando (Sí/No)','e');return;}const despInfo=getDespacho();if(!despInfo){showA('Seleccione el inmueble','e');return;}if(!serial){showA('Seleccione la planta eléctrica','e');return;}const primero=equiposConocidos().filter(r=>(r.serial||'').toUpperCase()===serial)[0];const consec=getNextConsecutivo();const reg={id:gid(),consecutivo:consec.num,anioOrden:consec.anio,codigoOrden:consec.codigo,serial,ciudad,inmueble:despInfo.inmueble,despacho:despInfo.despacho,tipoMant:tipo,descripcion:desc,funcionando,evaluacion:(tipo==='Evaluación'?{encendido:gv('ev-encendido'),tiempo:gv('ev-tiempo'),fecha:gv('ev-fecha'),horas:gv('ev-horas'),aceite:gv('ev-aceite'),refrigerante:gv('ev-refrigerante'),combustible:gv('ev-combustible'),obs:gv('ev-obs')}:null),fechaSolicitud:document.getElementById('f-fecha').value,tipoEq:primero?primero.tipoEq:'',marca:primero?primero.marca:'',modelo:primero?(primero.modelo||''):'',capacidad:primero?primero.capacidad:'',ubicacion:primero?primero.ubicacion:'',estadoOrden:(tipo==='Evaluación'?'Evaluación realizada':'Solicitud'),estado:(tipo==='Evaluación'?'Evaluación realizada':'Solicitado'),creadoEn:fmtNow(),timeline:[{fecha:fmtNow(),evento:(tipo==='Evaluación'?'Evaluación registrada — proceso finalizado':'Solicitud registrada'),tipo:(tipo==='Evaluación'?'e':'i'),detalle:`${tipo} · ${despInfo.despacho} · ${ciudad}`}],contratista:'',empresa:'',fechaEjecucion:'',fechaSalida:'',actividades:'',obsTecnico:'',obsAdmin:'',estadoFin:'',responsableRecibe:'',cargoResp:'',obsEntrega:'',satisfaccion:'',firma:null,decision:'',motivoInconformidad:''};await saveData(reg,true);document.getElementById('last-update').textContent='Guardado: '+fmtNow();showA(tipo==='Evaluación'?`✓ Evaluación registrada y finalizada — ${serial}`:`✓ Solicitud guardada — ${serial} · ${despInfo.despacho}`,'s');limpiar();setTimeout(()=>{document.querySelectorAll('.nav-btn')[2].click();},1200);}
 
 async function guardarEntregaTecnico(){
   const tec=(document.getElementById('g-tec-asignado').value||'').trim();
@@ -1273,7 +1339,7 @@ function initFirma(){const canvas=document.getElementById('firma-c');if(!canvas)
 function clrFirma(){const c=document.getElementById('firma-c');if(firmaCtx)firmaCtx.clearRect(0,0,c.width,c.height);firmaVacia=true;document.getElementById('firma-estado').textContent='';}
 function renderEncuesta(){document.getElementById('enc-opciones').innerHTML=[{val:'5',lbl:'Muy Satisfactorio',ico:'ti-mood-happy'},{val:'4',lbl:'Satisfactorio',ico:'ti-mood-smile'},{val:'3',lbl:'Normal',ico:'ti-mood-neutral'},{val:'2',lbl:'Poco Satisfactorio',ico:'ti-mood-confused'},{val:'1',lbl:'No Satisfactorio',ico:'ti-mood-sad'}].map(o=>`<label class="enc-opt" onmouseover="this.style.borderColor='${SCOLORS[o.val]}';this.style.background='${SBGS[o.val]}'" onmouseout="syncEncuesta()"><input type="radio" name="enc-sat" value="${o.val}" style="accent-color:${SCOLORS[o.val]};width:15px;height:15px;flex-shrink:0" onchange="syncEncuesta()"><i class="ti ${o.ico}" style="font-size:20px;color:${SCOLORS[o.val]};flex-shrink:0"></i><span style="font-size:12px;font-weight:600;color:${SCOLORS[o.val]}">${o.lbl}</span><span style="font-size:11px;color:var(--text2);flex:1;padding-left:4px">${o.val}/5</span></label>`).join('');}
 function syncEncuesta(){document.querySelectorAll('#enc-opciones label').forEach(lbl=>{const inp=lbl.querySelector('input');lbl.style.borderColor=inp.checked?SCOLORS[inp.value]:'var(--border)';lbl.style.background=inp.checked?SBGS[inp.value]:'#fff';});}
-function limpiar(){['f-ciudad','f-inmueble','f-planta','f-tipo','f-funcionando','f-serial','f-tipo-eq','f-marca','f-capacidad','f-ubicacion','f-descripcion','ev-tiempo','ev-fecha','ev-obs'].forEach(id=>{const el=document.getElementById(id);if(el){el.value='';if(el.tagName==='SELECT')el.selectedIndex=0;}});document.getElementById('f-despacho').value='';document.getElementById('f-fecha').value=hoy();document.getElementById('grupo-inmueble').style.display='none';document.getElementById('grupo-planta').style.display='none';document.getElementById('equipo-info-panel').style.display='none';const cl=document.getElementById('checklist-eval');if(cl)cl.style.display='none';mostrarPaso(1);}
+function limpiar(){['f-ciudad','f-inmueble','f-planta','f-tipo','f-funcionando','f-serial','f-tipo-eq','f-marca','f-capacidad','f-ubicacion','f-descripcion','ev-tiempo','ev-fecha','ev-horas','ev-obs'].forEach(id=>{const el=document.getElementById(id);if(el){el.value='';if(el.tagName==='SELECT')el.selectedIndex=0;}});document.getElementById('f-despacho').value='';document.getElementById('f-fecha').value=hoy();document.getElementById('grupo-inmueble').style.display='none';document.getElementById('grupo-planta').style.display='none';document.getElementById('equipo-info-panel').style.display='none';const cl=document.getElementById('checklist-eval');if(cl)cl.style.display='none';mostrarPaso(1);}
 function miniTimeline(r){const e=r.estadoOrden||'Solicitud';const fin=['Entregado conforme','No conforme'].includes(e);const pasos=r.tipoMant==='Evaluación'?[{lbl:'Solicitud',done:true},{lbl:'Evaluación realizada',done:(e==='Evaluación realizada'||fin)}]:[{lbl:'Solicitud',done:true},{lbl:'Al técnico',done:['Entregado al Técnico','En Mantenimiento','Entregado conforme','No conforme'].includes(e)},{lbl:'Ejecución',done:['En Mantenimiento','Entregado conforme','No conforme'].includes(e)},{lbl:'Evaluación',done:fin}];const last=pasos.length-1;let h='<div class="mtl">';pasos.forEach((p,i)=>{const curr=!p.done&&(i===0||(pasos[i-1]&&pasos[i-1].done));h+=`<div class="mtl-dot ${p.done?'done':curr?'curr':''}"><i class="ti ${p.done?'ti-check':curr?'ti-point':'ti-circle'}" style="font-size:9px"></i></div><span class="mtl-lbl">${p.lbl}</span>`;if(i<last)h+=`<div class="mtl-line ${p.done?'done':''}"></div>`;});return h+'</div>';}
 function btnSiguiente(r){const e=r.estadoOrden||'Solicitud';if(['Entregado conforme','No conforme'].includes(e))return'';if(r.tipoMant==='Evaluación')return'';if(e==='Solicitud')return puede('asignar')?`<button class="btn btn-p btn-sm" onclick="continuarOrden('${r.id}',2)"><i class="ti ti-user-check"></i>Entregar al técnico</button>`:'';if(e==='Entregado al Técnico')return puede('ejecutar')?`<button class="btn btn-sm" style="background:#1e8449;color:#fff;border-color:#1e8449" onclick="continuarOrden('${r.id}',3)"><i class="ti ti-tool"></i>Registrar ejecución</button>`:'';if(e==='En Mantenimiento')return puede('evaluar')?`<button class="btn btn-sm btn-w" onclick="continuarOrden('${r.id}',4)"><i class="ti ti-star"></i>Registrar evaluación</button>`:'';return'';}
 // ── CONTROL DE FILTROS HISTORIAL ──
@@ -1468,6 +1534,7 @@ function renderChecklistEval(ev){
   const encChip = enc?`<span style="display:inline-flex;align-items:center;gap:3px;font-size:10.5px;background:${noEnc?'#fce8e8':'#e6f7ee'};color:${noEnc?'#c0392b':'#155230'};padding:2px 8px;border-radius:8px;font-weight:600"><i class="ti ${noEnc?'ti-x':'ti-check'}" style="font-size:10px"></i>Encendió: ${enc}</span>`:'';
   const chips=[encChip,
     ev.tiempo?`<span style="font-size:10.5px;background:var(--bg2);color:var(--text2);padding:2px 8px;border-radius:8px;font-weight:600"><i class="ti ti-clock" style="font-size:10px"></i> ${ev.tiempo}</span>`:'',
+    ev.horas?`<span style="font-size:10.5px;background:#e8f0fa;color:#1a3a5c;padding:2px 8px;border-radius:8px;font-weight:600"><i class="ti ti-gauge" style="font-size:10px"></i> Horómetro: ${ev.horas} h</span>`:'',
     ev.fecha?`<span style="font-size:10.5px;background:var(--bg2);color:var(--text2);padding:2px 8px;border-radius:8px;font-weight:600"><i class="ti ti-calendar" style="font-size:10px"></i> ${fmt(ev.fecha)}</span>`:'',
     nivelChip('Aceite',ev.aceite),nivelChip('Refrigerante',ev.refrigerante),nivelChip('Combustible',ev.combustible)
   ].filter(Boolean).join(' ');
@@ -1525,6 +1592,7 @@ function verHojaVida(serial){
       <span class="ecard-serial">${eq.serial}</span>
       <div class="ecard-info"><h3>${eq.descripcion||eq.marca}</h3><p>${eq.marca}${cap!=='No registrada'?' · '+cap:''} · ${eq.tipoEq}</p></div>
       <span class="ecard-badge-hdr"><i class="ti ti-map-pin" style="font-size:10px"></i> ${eq.ciudad}</span>
+      ${puede('editar')?`<button class="btn btn-sm" style="background:rgba(255,255,255,.15);color:#fff;border-color:rgba(255,255,255,.3)" onclick="abrirEditarPlanta('${eq.serial}')"><i class="ti ti-edit"></i>Editar planta</button>`:''}
     </div>
     <div class="ecard-body">
 
@@ -1535,7 +1603,7 @@ function verHojaVida(serial){
         ${puede('crear')?`<button class="btn btn-sm btn-p" style="margin-left:auto" onclick="usarEquipoEnNuevaOrden('${eq.serial}')"><i class="ti ti-plus"></i>Registrar mantenimiento</button>`:''}
       </div>
 
-      <div class="ecard-section-lbl"><i class="ti ti-clipboard-list"></i> Datos generales</div>
+      <div class="ecard-section-lbl"><i class="ti ti-clipboard-list"></i> Datos generales ${cargarCatEdits()[(eq.serial||'').toUpperCase()]?'<span style="font-size:9px;background:#e8f0fa;color:#1a3a5c;padding:1px 7px;border-radius:7px;font-weight:600;margin-left:6px"><i class="ti ti-edit" style="font-size:9px"></i> Datos actualizados</span>':''}</div>
       <div class="ecard-datos">
         <div class="ecard-dato"><div class="ed-l">Código</div><div class="ed-v" style="font-family:monospace">${eq.serial}</div></div>
         <div class="ecard-dato"><div class="ed-l">Descripción</div><div class="ed-v">${eq.descripcion||'—'}</div></div>
@@ -1550,11 +1618,12 @@ function verHojaVida(serial){
       <div class="ecard-datos">${specHtml}</div>
 
       <div class="ecard-section-lbl"><i class="ti ti-chart-bar"></i> Indicadores de seguimiento</div>
-      <div class="ecard-stats">
+      <div class="ecard-stats" style="grid-template-columns:repeat(6,1fr)">
         <div class="ecard-stat"><div class="sv" style="color:var(--c1)">${bit.length}</div><div class="sl">Intervenciones</div></div>
         <div class="ecard-stat"><div class="sv" style="color:#378ADD">${prev}</div><div class="sl">Preventivos</div></div>
         <div class="ecard-stat"><div class="sv" style="color:#EF9F27">${corr}</div><div class="sl">Correctivos</div></div>
         <div class="ecard-stat"><div class="sv" style="color:#7C3AED">${evalu}</div><div class="sl">Evaluaciones</div></div>
+        <div class="ecard-stat"><div class="sv" style="color:#1a3a5c;font-size:13px;padding-top:5px">${(()=>{const lecturas=bit.filter(b=>b.evaluacion&&b.evaluacion.horas).map(b=>Number(b.evaluacion.horas));return lecturas.length?lecturas[0]+' h':'—';})()}</div><div class="sl">Horómetro</div></div>
         <div class="ecard-stat"><div class="sv" style="color:var(--green);font-size:13px;padding-top:5px">${ult?fmt(ult.fecha):'—'}</div><div class="sl">Última interv.</div></div>
       </div>
 
@@ -1779,6 +1848,42 @@ async function guardarEdicion(id){
   setTimeout(()=>{cerrarEditar();renderAll();},1200);
 }
 function cerrarEditar(){document.getElementById('modal-editar').classList.remove('open');}
+// ── Editar datos de la planta ──
+function abrirEditarPlanta(serial){
+  const eq=equiposConocidos().find(e=>(e.serial||'').toUpperCase()===serial.toUpperCase());
+  if(!eq)return;
+  const set=(id,v)=>{const el=document.getElementById(id);if(el)el.value=v||'';};
+  set('mp-serial',eq.serial); set('mp-serial-vis',eq.serial);
+  set('mp-descripcion',eq.descripcion||''); set('mp-tipo',eq.tipoEq||'');
+  set('mp-marca',eq.marca||''); set('mp-modelo',eq.modelo||'');
+  set('mp-capacidad',eq.capacidad||''); set('mp-ubicacion',eq.ubicacion||'');
+  set('mp-ciudad',eq.ciudad||''); set('mp-despacho',eq.despacho||eq.inmueble||'');
+  set('mp-nserie',eq.nSerie||''); set('mp-anio',eq.anioFab||''); set('mp-notas',eq.notas||'');
+  document.getElementById('mp-title').innerHTML=`<i class="ti ti-engine"></i> Editar — ${eq.serial} · ${eq.descripcion||eq.marca}`;
+  document.getElementById('modal-planta').classList.add('open');
+}
+function cerrarEditarPlanta(){document.getElementById('modal-planta').classList.remove('open');}
+function guardarEditarPlanta(){
+  const serial=(document.getElementById('mp-serial').value||'').toUpperCase();
+  if(!serial)return;
+  const gv=id=>(document.getElementById(id)||{value:''}).value.trim();
+  const edit={
+    descripcion:gv('mp-descripcion'), tipoEq:gv('mp-tipo'), marca:gv('mp-marca'),
+    modelo:gv('mp-modelo'), capacidad:gv('mp-capacidad'), ubicacion:gv('mp-ubicacion'),
+    ciudad:gv('mp-ciudad'), despacho:gv('mp-despacho'), inmueble:gv('mp-despacho'),
+    nSerie:gv('mp-nserie'), anioFab:gv('mp-anio'), notas:gv('mp-notas')
+  };
+  // Remove empty keys so they fall back to base catalog
+  Object.keys(edit).forEach(k=>{if(!edit[k]) delete edit[k];});
+  const edits=cargarCatEdits();
+  edits[serial]={...(edits[serial]||{}),...edit};
+  guardarCatEdits(edits);
+  cerrarEditarPlanta();
+  showToast(`✓ Datos de la planta ${serial} actualizados`,'s');
+  // Refresh hoja de vida
+  if(hojaActiva===serial) verHojaVida(serial);
+  else renderHojas();
+}
 function exportar(){if(!regs.length){alert('No hay datos para exportar');return;}const enc=s=>`"${(s||'').toString().replace(/"/g,"''")}"`; const cab='ID,Serial,Ciudad,Inmueble,Despacho,Tipo Mant.,Fecha Solicitud,Tipo Equipo,Marca,Modelo,Capacidad,Ubicación,Estado Orden,Contratista,Fecha Ejecución,Actividades,Responsable Recibe,Cargo,Satisfacción,Decisión\n';const fil=regs.map(r=>[r.id,r.serial,r.ciudad,r.inmueble,enc(r.despacho),r.tipoMant,r.fechaSolicitud||'',r.tipoEq||'',r.marca||'',r.modelo||'',r.capacidad||'',enc(r.ubicacion||''),r.estadoOrden||'',r.contratista||'',r.fechaEjecucion||'',enc(r.actividades||''),r.responsableRecibe||'',r.cargoResp||'',r.satisfaccion?SATS[r.satisfaccion]:'',r.decision||''].join(',')).join('\n');const blob=new Blob(['\uFEFF'+cab+fil],{type:'text/csv;charset=utf-8;'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`SIGE_PE_${hoy()}.csv`;a.click();}
 function imprimirResumen(){if(raReg)imprimirResumenId(raReg.id);}
 function imprimirResumenId(id){
@@ -2260,7 +2365,7 @@ async function enviarEncuestaPublica(){
     return; // No cargar el resto del aplicativo
   }
 
-  ['modal','modal-editar'].forEach(id=>{const m=document.getElementById(id);if(m)m.addEventListener('click',function(e){if(e.target===this){if(id==='modal')cerrar();else cerrarEditar();}});});
+  ['modal','modal-editar','modal-planta'].forEach(id=>{const m=document.getElementById(id);if(m)m.addEventListener('click',function(e){if(e.target===this){if(id==='modal')cerrar();else if(id==='modal-editar')cerrarEditar();else cerrarEditarPlanta();}});});
   document.getElementById('f-fecha').value=hoy();
   renderEncuesta();
 
@@ -2440,6 +2545,9 @@ window.verHojaVida = verHojaVida;
 window.abrirMod = abrirMod;
 window.cerrar = cerrar;
 window.abrirEditar = abrirEditar;
+window.abrirEditarPlanta = abrirEditarPlanta;
+window.cerrarEditarPlanta = cerrarEditarPlanta;
+window.guardarEditarPlanta = guardarEditarPlanta;
 window.guardarEdicion = guardarEdicion;
 window.buscarSerialEnEdicion = buscarSerialEnEdicion;
 window.aplicarEquipoEdicion = aplicarEquipoEdicion;
