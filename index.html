@@ -1066,8 +1066,9 @@ function bdgTipo(t){const c=CT_TIPOS[t]||'#94a3b8';return`<span class="bdg" styl
 // criptográficamente segura (cualquiera con acceso al archivo puede verlas). Sirve como
 // control de acceso operativo. Para seguridad real use Firebase Authentication + reglas.
 const USUARIOS=[
-  {usuario:'admin',   clave:'arauca2026', rol:'admin',   nombre:'Administrador'},
-  {usuario:'tecnico', clave:'tecnico2026',rol:'tecnico', nombre:'Técnico de mantenimiento'}
+  {usuario:'admin',       clave:'arauca2026',     rol:'admin',   nombre:'Administrador'},
+  {usuario:'tecnico',     clave:'tecnico2026',    rol:'tecnico', nombre:'Técnico de mantenimiento'},
+  {usuario:'contratista', clave:'contratista2026',rol:'admin',   nombre:'Contratista — Inversiones Integrales'}
 ];
 const PERMISOS={
   admin:  {tabs:['dashboard','nuevo','historial','hojas','config'], crear:true, asignar:true, ejecutar:true, evaluar:true, editar:true, eliminar:true},
