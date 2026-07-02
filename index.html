@@ -1066,14 +1066,15 @@ function bdgTipo(t){const c=CT_TIPOS[t]||'#94a3b8';return`<span class="bdg" styl
 // criptográficamente segura (cualquiera con acceso al archivo puede verlas). Sirve como
 // control de acceso operativo. Para seguridad real use Firebase Authentication + reglas.
 const USUARIOS=[
-  {usuario:'admin',       clave:'arauca2026',     rol:'admin',   nombre:'Administrador'},
-  {usuario:'tecnico',     clave:'tecnico2026',    rol:'tecnico', nombre:'Técnico de mantenimiento'},
-  {usuario:'contratista', clave:'contratista2026',rol:'admin',   nombre:'Contratista — Inversiones Integrales'}
+  {usuario:'admin',       clave:'arauca2026',     rol:'admin',        nombre:'Administrador'},
+  {usuario:'tecnico',     clave:'tecnico2026',    rol:'tecnico',      nombre:'Técnico de mantenimiento'},
+  {usuario:'contratista', clave:'contratista2026',rol:'contratista',  nombre:'Contratista — Inversiones Integrales'}
 ];
 const PERMISOS={
-  admin:  {tabs:['dashboard','nuevo','historial','hojas','config'], crear:true, asignar:true, ejecutar:true, evaluar:true, editar:true, eliminar:true},
-  tecnico:{tabs:['nuevo','historial','hojas'],                       crear:false,asignar:false,ejecutar:true, evaluar:true, editar:false,eliminar:false},
-  final:  {tabs:['dashboard','hojas'],                              crear:false,asignar:false,ejecutar:false,evaluar:false,editar:false,eliminar:false, soloLectura:true}
+  admin:       {tabs:['dashboard','nuevo','historial','hojas','config'], crear:true, asignar:true, ejecutar:true, evaluar:true, editar:true, eliminar:true},
+  contratista: {tabs:['dashboard','nuevo','historial','hojas'],                  crear:false,asignar:true, ejecutar:true, evaluar:true, editar:true, eliminar:false},
+  tecnico:     {tabs:['nuevo','historial','hojas'],                      crear:false,asignar:false,ejecutar:true, evaluar:true, editar:false,eliminar:false},
+  final:       {tabs:['dashboard','hojas'],                              crear:false,asignar:false,ejecutar:false,evaluar:false,editar:false,eliminar:false, soloLectura:true}
 };
 let SESION=null;
 function rolActivo(){return SESION?SESION.rol:null;}
@@ -1109,12 +1110,12 @@ function aplicarPermisos(){
   document.getElementById('user-chip').style.display='block';
   document.getElementById('btn-logout').style.display='';
   document.getElementById('user-nombre').textContent=SESION.nombre;
-  const rolLbl={admin:'Administrador',tecnico:'Técnico',final:'Consulta'};
+  const rolLbl={admin:'Administrador',contratista:'Contratista',tecnico:'Técnico',final:'Consulta'};
   document.getElementById('user-rol').textContent=rolLbl[SESION.rol]||SESION.rol;
   document.querySelectorAll('.nav-btn[data-tab]').forEach(b=>{
     const tab=b.getAttribute('data-tab');
     // tecnico: tiene acceso al panel 'nuevo' para la firma, pero no como pestaña navegable
-    const navVisible = p.tabs.includes(tab) && !(rolActivo()==='tecnico' && tab==='nuevo');
+    const navVisible = p.tabs.includes(tab) && !(['tecnico','contratista'].includes(rolActivo()) && tab==='nuevo');
     b.style.display = navVisible ? '' : 'none';
   });
   const primera=p.tabs[0];
