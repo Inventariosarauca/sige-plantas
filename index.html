@@ -1067,8 +1067,8 @@ function bdgTipo(t){const c=CT_TIPOS[t]||'#94a3b8';return`<span class="bdg" styl
 // control de acceso operativo. Para seguridad real use Firebase Authentication + reglas.
 const USUARIOS=[
   {usuario:'admin',       clave:'arauca2026',     rol:'admin',        nombre:'Administrador'},
-  {usuario:'tecnico',     clave:'tecnico2026',    rol:'tecnico',      nombre:'Técnico de mantenimiento'},
-  {usuario:'contratista', clave:'contratista2026',rol:'contratista',  nombre:'Contratista — Inversiones Integrales'}
+  {usuario:'tecnico',     clave:'tecnico2026',    rol:'tecnico',      nombre:'Tecnico de mantenimiento'},
+  {usuario:'contratista', clave:'contratista2026',rol:'contratista',  nombre:'Contratista - Inversiones Integrales'}
 ];
 const PERMISOS={
   admin:       {tabs:['dashboard','nuevo','historial','hojas','config'], crear:true, asignar:true, ejecutar:true, evaluar:true, editar:true, eliminar:true},
@@ -1272,7 +1272,9 @@ async function guardarEntregaTecnico(){
   document.getElementById('last-update').textContent='Actualizado: '+fmtNow();
   setTimeout(()=>{document.querySelectorAll('.nav-btn')[2].click();},1200);
 }
-async function guardarEjecucion(){const contratista=document.getElementById('g-contratista').value.trim(),fechaej=document.getElementById('g-fechaej').value,actividades=document.getElementById('g-actividades').value.trim();if(!contratista||!fechaej||!actividades){showA('Complete contratista, fecha de ejecución y actividades','e');return;}if(!ordenActiva){showA('Error: no hay orden activa','e');return;}const r=regs.find(x=>x.id===ordenActiva.id);if(!r){showA('Error: orden no encontrada','e');return;}r.contratista=contratista;r.empresa='';r.fechaEjecucion=fechaej;r.fechaSalida='';r.actividades=actividades;r.obsTecnico=document.getElementById('g-obs-tec').value;r.obsAdmin='';r.estadoFin=document.getElementById('g-estado-fin').value;r.estadoOrden='En Mantenimiento';r.estado='En Mantenimiento';r.timeline.push({fecha:fmtNow(),evento:'Trabajos completados — notificación al administrativo',tipo:'l',detalle:`Técnico: ${contratista} | ${actividades.substring(0,60)}`});await saveData(r,false);showA('✓ Ejecución guardada correctamente','s');ordenActiva=null;document.getElementById('last-update').textContent='Actualizado: '+fmtNow();setTimeout(()=>{document.querySelectorAll('.nav-btn')[2].click();},1200);}
+async function guardarEjecucion(){const contratista=document.getElementById('g-contratista').value.trim(),fechaej=document.getElementById('g-fechaej').value,actividades=document.getElementById('g-actividades').value.trim();if(!contratista||!fechaej||!actividades){showA('Complete contratista, fecha de ejecución y actividades','e');return;}if(!ordenActiva){showA('Error: no hay orden activa','e');return;}const r=regs.find(x=>x.id===ordenActiva.id);if(!r){showA('Error: orden no encontrada','e');return;}r.contratista=contratista;r.empresa='';r.fechaEjecucion=fechaej;r.fechaSalida='';r.actividades=actividades;r.obsTecnico=document.getElementById('g-obs-tec').value;r.obsAdmin='';r.estadoFin=document.getElementById('g-estado-fin').value;
+  r.funcionando=(r.estadoFin==='Dañado')?'No':'Sí';
+  r.estadoOrden='En Mantenimiento';r.estado='En Mantenimiento';r.timeline.push({fecha:fmtNow(),evento:'Trabajos completados — notificación al administrativo',tipo:'l',detalle:`Técnico: ${contratista} | ${actividades.substring(0,60)}`});await saveData(r,false);showA('✓ Ejecución guardada correctamente','s');ordenActiva=null;document.getElementById('last-update').textContent='Actualizado: '+fmtNow();setTimeout(()=>{document.querySelectorAll('.nav-btn')[2].click();},1200);}
 async function guardarEvaluacion(){
   if(!decisionSeleccionada){showA('Seleccione Conforme o No conforme antes de finalizar','e');return;}
   const resp=document.getElementById('g-resp-recibe').value.trim();
@@ -1555,19 +1557,30 @@ function bitacoraDe(serial){
     .map(r=>({fecha:r.fechaEjecucion||r.fechaSolicitud||r.creadoEn||'',tipo:r.tipoMant,diagnostico:r.descripcion||'',procedimiento:r.actividades||'',observaciones:[r.obsTecnico,r.obsEntrega].filter(Boolean).join(' — '),estado:r.estadoFin||'',evaluacion:r.evaluacion||null,fuente:'SIGE',id:r.id,cons:fmtConsecutivo(r)}));
   return [...hist,...live].sort((a,b)=>((a.fecha||'')<(b.fecha||'')?1:-1));
 }
-// ¿Está funcionando la planta? = valor de la orden más reciente que lo registró; si no hay, se deduce del estado base
-function funcionandoDe(eq){
-  const o=regs.filter(r=>(r.serial||'').toUpperCase()===eq.serial.toUpperCase() && (r.funcionando==='Sí'||r.funcionando==='No'))
-    .sort((a,b)=>((a.fechaSolicitud||a.creadoEn||'')<(b.fechaSolicitud||b.creadoEn||'')?1:-1));
-  if(o[0]) return o[0].funcionando;
-  return normEstado(eq.estadoBase)==='Dañado'?'No':'Sí';
-}
-// Estado operativo actual = el de la orden SIGE más reciente (si existe), o el estado consolidado del inventario
-function estadoActualPlanta(eq){
-  const live=regs.filter(r=>(r.serial||'').toUpperCase()===eq.serial.toUpperCase() && r.estadoFin)
-    .sort((a,b)=>((a.fechaEjecucion||a.creadoEn||'')<(b.fechaEjecucion||b.creadoEn||'')?1:-1));
-  if(live[0]) return normEstado(live[0].estadoFin);
+// ══ ESTADO OPERATIVO UNIFICADO ══
+// Fuente unica de verdad: lee estadoFin (Paso 3) y funcionando (Paso 1) del mismo registro,
+// priorizando la intervencion mas reciente que tenga alguno de los dos campos.
+function estadoOperativoPlanta(eq){
+  const s=(eq.serial||'').toUpperCase();
+  const candidatos=regs
+    .filter(r=>(r.serial||'').toUpperCase()===s && (r.estadoFin||r.funcionando))
+    .sort((a,b)=>{
+      const fa=a.fechaEjecucion||a.fechaSolicitud||a.creadoEn||'';
+      const fb=b.fechaEjecucion||b.fechaSolicitud||b.creadoEn||'';
+      return fa<fb?1:-1;
+    });
+  const ult=candidatos[0];
+  if(ult){
+    if(ult.estadoFin) return normEstado(ult.estadoFin);
+    if(ult.funcionando==='No') return normEstado('Dañado');
+    if(ult.funcionando==='Si'||ult.funcionando==='Sí') return 'Operando';
+  }
   return normEstado(eq.estadoBase)||'';
+}
+function estadoActualPlanta(eq){ return estadoOperativoPlanta(eq); }
+function funcionandoDe(eq){
+  const est=estadoOperativoPlanta(eq);
+  return (est==='Dañado')?'No':'Sí';
 }
 
 function verHojaVida(serial){
